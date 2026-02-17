@@ -99,6 +99,24 @@ export function getEndOfDay(date: Date = new Date()): Date {
 }
 
 /**
+ * Get start and end of month
+ */
+export function getStartOfMonth(date: Date = new Date()): Date {
+    const d = new Date(date);
+    d.setDate(1);
+    d.setHours(0, 0, 0, 0);
+    return d;
+}
+
+export function getEndOfMonth(date: Date = new Date()): Date {
+    const d = new Date(date);
+    d.setMonth(d.getMonth() + 1);
+    d.setDate(0);
+    d.setHours(23, 59, 59, 999);
+    return d;
+}
+
+/**
  * Check if date is today
  */
 export function isToday(date: Date | string): boolean {

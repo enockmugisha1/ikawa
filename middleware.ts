@@ -12,7 +12,7 @@ const routeAccess: Record<string, string[]> = {
     '/exporter': ['exporter', 'admin'],
 };
 
-export function middleware(request: NextRequest) {
+export default function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Debug: Check if JWT_SECRET is available
@@ -20,12 +20,12 @@ export function middleware(request: NextRequest) {
 
     // 1. Check if token exists and is valid
     const token = request.cookies.get('token')?.value;
-    
+
     // Debug: Show token details
     if (token) {
         console.log('[Middleware] Token found, length:', token.length, 'first 20 chars:', token.substring(0, 20));
     }
-    
+
     const user = token ? verifyToken(token) : null;
 
     // Debug logging
@@ -83,6 +83,3 @@ export const config = {
         '/((?!api|_next/static|_next/image|favicon.ico|uploads).*)',
     ],
 };
-
-// Use Node.js runtime for access to environment variables
-export const runtime = 'nodejs';

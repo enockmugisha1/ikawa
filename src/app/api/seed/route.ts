@@ -53,7 +53,8 @@ export async function POST() {
         // Create Exporters
         const exporter1 = await ExporterModel.create({
             exporterCode: 'EXP-001',
-            name: 'Rwanda Coffee Exporters Ltd',
+            companyTradingName: 'Rwanda Coffee Exporters Ltd',
+            companyAddress: 'KN 4 Ave, Kigali, Rwanda',
             contactPerson: 'John Doe',
             phone: '+250788111111',
             email: 'contact@rwandacoffee.rw',
@@ -62,7 +63,8 @@ export async function POST() {
 
         const exporter2 = await ExporterModel.create({
             exporterCode: 'EXP-002',
-            name: 'Global Coffee Trading',
+            companyTradingName: 'Global Coffee Trading',
+            companyAddress: 'Kimihurura, KG 7 Ave, Kigali, Rwanda',
             contactPerson: 'Jane Smith',
             phone: '+250788222222',
             email: 'info@globalcoffee.com',
@@ -71,7 +73,8 @@ export async function POST() {
 
         const exporter3 = await ExporterModel.create({
             exporterCode: 'EXP-003',
-            name: 'East Africa Coffee Co',
+            companyTradingName: 'East Africa Coffee Co',
+            companyAddress: 'Remera, KG 17 Ave, Kigali, Rwanda',
             contactPerson: 'Mark Johnson',
             phone: '+250788333333',
             email: 'info@eacoffee.com',
@@ -249,7 +252,7 @@ export async function POST() {
             data: {
                 cooperatives: [cooperative1.name, cooperative2.name],
                 facility: facility.name,
-                exporters: [exporter1.name, exporter2.name, exporter3.name],
+                exporters: [exporter1.companyTradingName, exporter2.companyTradingName, exporter3.companyTradingName],
                 workers: workers.length,
                 todayAttendance: attendanceRecords.length,
                 activeSessions: sessions.length,

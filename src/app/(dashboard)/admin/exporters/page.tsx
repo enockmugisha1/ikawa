@@ -6,7 +6,8 @@ import toast, { Toaster } from 'react-hot-toast';
 interface Exporter {
     _id: string;
     exporterCode: string;
-    name: string;
+    companyTradingName: string;
+    companyAddress: string;
     contactPerson: string;
     phone: string;
     email: string;
@@ -20,7 +21,8 @@ export default function AdminExportersPage() {
     const [editingExporter, setEditingExporter] = useState<Exporter | null>(null);
     const [formData, setFormData] = useState({
         exporterCode: '',
-        name: '',
+        companyTradingName: '',
+        companyAddress: '',
         contactPerson: '',
         phone: '',
         email: '',
@@ -59,7 +61,8 @@ export default function AdminExportersPage() {
             setShowAddForm(false);
             setFormData({
                 exporterCode: '',
-                name: '',
+                companyTradingName: '',
+                companyAddress: '',
                 contactPerson: '',
                 phone: '',
                 email: '',
@@ -74,7 +77,8 @@ export default function AdminExportersPage() {
         setEditingExporter(exporter);
         setFormData({
             exporterCode: exporter.exporterCode,
-            name: exporter.name,
+            companyTradingName: exporter.companyTradingName,
+            companyAddress: exporter.companyAddress,
             contactPerson: exporter.contactPerson,
             phone: exporter.phone,
             email: exporter.email,
@@ -98,7 +102,8 @@ export default function AdminExportersPage() {
             setEditingExporter(null);
             setFormData({
                 exporterCode: '',
-                name: '',
+                companyTradingName: '',
+                companyAddress: '',
                 contactPerson: '',
                 phone: '',
                 email: '',
@@ -162,7 +167,7 @@ export default function AdminExportersPage() {
                             <div className="flex justify-between items-start mb-4">
                                 <div>
                                     <h3 className="text-lg font-semibold text-gray-900">
-                                        {exporter.name}
+                                        {exporter.companyTradingName}
                                     </h3>
                                     <p className="text-sm text-gray-500">{exporter.exporterCode}</p>
                                 </div>
@@ -177,6 +182,10 @@ export default function AdminExportersPage() {
                             </div>
 
                             <div className="space-y-2 mb-4">
+                                <div className="flex items-center text-sm text-gray-600">
+                                    <span className="mr-2">📍</span>
+                                    {exporter.companyAddress}
+                                </div>
                                 <div className="flex items-center text-sm text-gray-600">
                                     <span className="mr-2">👤</span>
                                     {exporter.contactPerson}
@@ -241,15 +250,29 @@ export default function AdminExportersPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Company Name
+                                    Company Trading Name
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.name}
+                                    value={formData.companyTradingName}
                                     onChange={(e) =>
-                                        setFormData({ ...formData, name: e.target.value })
+                                        setFormData({ ...formData, companyTradingName: e.target.value })
                                     }
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    required
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Company Address
+                                </label>
+                                <textarea
+                                    value={formData.companyAddress}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, companyAddress: e.target.value })
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    rows={2}
                                     required
                                 />
                             </div>
@@ -309,7 +332,8 @@ export default function AdminExportersPage() {
                                         setEditingExporter(null);
                                         setFormData({
                                             exporterCode: '',
-                                            name: '',
+                                            companyTradingName: '',
+                                            companyAddress: '',
                                             contactPerson: '',
                                             phone: '',
                                             email: '',

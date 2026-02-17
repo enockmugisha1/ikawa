@@ -11,70 +11,30 @@ import {
     UserPlus,
     Settings,
     RefreshCw,
-    Info
+    Info,
+    Weight,
+    Building2,
+    DollarSign,
+    BarChart3
 } from 'lucide-react';
 
 export default function SupervisorDashboard() {
-    const [stats, setStats] = useState({
-        attendance: 0,
-        activeSessions: 0,
-        bagsToday: 0,
-    });
-    const [attendanceTrend, setAttendanceTrend] = useState<any[]>([]);
-    const [bagsTrend, setBagsTrend] = useState<any[]>([]);
+    const [analytics, setAnalytics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
-        fetchStats();
-        fetchTrends();
+        fetchAnalytics();
     }, []);
 
-    const fetchStats = async () => {
+    const fetchAnalytics = async () => {
         try {
-            const [attendanceRes, sessionsRes, bagsRes] = await Promise.all([
-                fetch('/api/attendance/checkin'),
-                fetch('/api/sessions'),
-                fetch('/api/bags?date=' + new Date().toISOString().split('T')[0]),
-            ]);
-
-            const attendanceData = await attendanceRes.json();
-            const sessionsData = await sessionsRes.json();
-            const bagsData = await bagsRes.json();
-
-            setStats({
-                attendance: attendanceData.attendance?.length || 0,
-                activeSessions: sessionsData.sessions?.length || 0,
-                bagsToday: bagsData.bags?.length || 0,
-            });
+            setLoading(true);
+            const res = await fetch('/api/analytics/supervisor');
+            const data = await res.json();
+            setAnalytics(data.analytics);
         } catch (error) {
-            console.error('Error fetching stats:', error);
-        }
-    };
-
-    const fetchTrends = async () => {
-        setLoading(true);
-        try {
-            const last7Days = Array.from({ length: 7 }, (_, i) => {
-                const date = new Date();
-                date.setDate(date.getDate() - (6 - i));
-                return date.toISOString().split('T')[0];
-            });
-
-            const attendanceData = last7Days.map((date, index) => ({
-                date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                workers: Math.floor(Math.random() * 20) + 10,
-            }));
-
-            const bagsData = last7Days.map((date, index) => ({
-                date: new Date(date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-                bags: Math.floor(Math.random() * 30) + 10,
-            }));
-
-            setAttendanceTrend(attendanceData);
-            setBagsTrend(bagsData);
-        } catch (error) {
-            console.error('Error fetching trends:', error);
+            console.error('Error fetching analytics:', error);
         } finally {
             setLoading(false);
         }
@@ -82,7 +42,7 @@ export default function SupervisorDashboard() {
 
     const handleRefresh = async () => {
         setRefreshing(true);
-        await Promise.all([fetchStats(), fetchTrends()]);
+        await fetchAnalytics();
         setRefreshing(false);
     };
 
@@ -111,50 +71,86 @@ export default function SupervisorDashboard() {
                 </button>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-xl p-6 text-white">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16" />
+            {/* Stats Grid - High-Level Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
+                {/* Total Workers */}
+                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                <Users className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                <Users className="w-6 h-6 text-blue-600" />
                             </div>
-                            <TrendingUp className="w-5 h-5 text-emerald-100" />
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <p className="text-emerald-100 text-sm font-medium">Today's Attendance</p>
-                        <p className="mt-2 text-4xl font-bold">{stats.attendance}</p>
-                        <p className="mt-2 text-sm text-emerald-100">Workers checked in</p>
+                        <p className="text-gray-600 text-sm font-medium">Total Workers</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.totalWorkers || 0}</p>
+                        <p className="mt-2 text-sm text-emerald-600 font-medium">Active</p>
                     </div>
                 </div>
 
-                <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-xl p-6 text-white">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16" />
+                {/* Workers Checked In Today */}
+                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                <Activity className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                                <UserPlus className="w-6 h-6 text-emerald-600" />
                             </div>
-                            <Clock className="w-5 h-5 text-blue-100" />
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <p className="text-blue-100 text-sm font-medium">Active Sessions</p>
-                        <p className="mt-2 text-4xl font-bold">{stats.activeSessions}</p>
-                        <p className="mt-2 text-sm text-blue-100">Workers sorting now</p>
+                        <p className="text-gray-600 text-sm font-medium">Checked In Today</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.workersCheckedInToday || 0}</p>
+                        <p className="mt-2 text-sm text-gray-600">On-site now</p>
                     </div>
                 </div>
 
-                <div className="relative overflow-hidden bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-xl p-6 text-white">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16" />
+                {/* Active Sessions */}
+                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center">
-                                <Package className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                <Activity className="w-6 h-6 text-purple-600" />
                             </div>
-                            <TrendingUp className="w-5 h-5 text-purple-100" />
+                            {analytics?.activeSessions > 0 && (
+                                <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                            )}
                         </div>
-                        <p className="text-purple-100 text-sm font-medium">Bags Processed</p>
-                        <p className="mt-2 text-4xl font-bold">{stats.bagsToday}</p>
-                        <p className="mt-2 text-sm text-purple-100">Today's output</p>
+                        <p className="text-gray-600 text-sm font-medium">Active Sessions</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.activeSessions || 0}</p>
+                        <p className="mt-2 text-sm text-gray-600">Sorting now</p>
+                    </div>
+                </div>
+
+                {/* Bags Processed Today */}
+                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                                <Package className="w-6 h-6 text-amber-600" />
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
+                        </div>
+                        <p className="text-gray-600 text-sm font-medium">Bags Processed</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.bagsToday || 0}</p>
+                        <p className="mt-2 text-sm text-gray-600">Today's output</p>
+                    </div>
+                </div>
+
+                {/* Total Labor Costs Today */}
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-md transition-shadow">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
+                                <DollarSign className="w-6 h-6 text-white" />
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-emerald-600" />
+                        </div>
+                        <p className="text-emerald-900 text-sm font-medium">Labor Costs Today</p>
+                        <p className="mt-2 text-4xl font-bold text-emerald-900">
+                            ${analytics?.totalLaborCostsToday?.toLocaleString() || 0}
+                        </p>
+                        <p className="mt-2 text-sm text-emerald-700 font-medium">
+                            {analytics?.totalHoursWorked || 0} hrs worked
+                        </p>
                     </div>
                 </div>
             </div>
@@ -181,7 +177,7 @@ export default function SupervisorDashboard() {
                         </div>
                     ) : (
                         <ResponsiveContainer width="100%" height={250}>
-                            <LineChart data={attendanceTrend}>
+                            <LineChart data={analytics?.trends?.attendance || []}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                 <XAxis dataKey="date" stroke="#6b7280" style={{ fontSize: '12px' }} />
                                 <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
@@ -190,8 +186,11 @@ export default function SupervisorDashboard() {
                                         backgroundColor: 'white', 
                                         border: '1px solid #e5e7eb', 
                                         borderRadius: '8px',
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                                    }} 
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                        color: '#111827'
+                                    }}
+                                    labelStyle={{ color: '#111827', fontWeight: 600 }}
+                                    itemStyle={{ color: '#374151' }}
                                 />
                                 <Line 
                                     type="monotone" 
@@ -226,7 +225,7 @@ export default function SupervisorDashboard() {
                         </div>
                     ) : (
                         <ResponsiveContainer width="100%" height={250}>
-                            <BarChart data={bagsTrend}>
+                            <BarChart data={analytics?.trends?.bags || []}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                                 <XAxis dataKey="date" stroke="#6b7280" style={{ fontSize: '12px' }} />
                                 <YAxis stroke="#6b7280" style={{ fontSize: '12px' }} />
@@ -235,8 +234,11 @@ export default function SupervisorDashboard() {
                                         backgroundColor: 'white', 
                                         border: '1px solid #e5e7eb', 
                                         borderRadius: '8px',
-                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                                    }} 
+                                        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+                                        color: '#111827'
+                                    }}
+                                    labelStyle={{ color: '#111827', fontWeight: 600 }}
+                                    itemStyle={{ color: '#374151' }}
                                 />
                                 <Bar 
                                     dataKey="bags" 

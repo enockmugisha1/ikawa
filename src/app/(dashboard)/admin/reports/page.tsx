@@ -155,7 +155,7 @@ export default function AdminReportsPage() {
 
         return {
           exporterId: exporter._id,
-          exporterName: exporter.name,
+          exporterName: exporter.companyTradingName,
           bagsSorted: exporterBags.length,
           workersInvolved: workerIds.size,
           totalLaborCost: laborCost,
@@ -206,7 +206,7 @@ export default function AdminReportsPage() {
           const exporterId = bag.exporterId?._id || bag.exporterId;
           if (!exporterIds.has(exporterId)) {
             exporterIds.add(exporterId);
-            exporterNames.push(bag.exporterId?.name || 'Unknown');
+            exporterNames.push(bag.exporterId?.companyTradingName || 'Unknown');
           }
         });
 
@@ -319,7 +319,7 @@ export default function AdminReportsPage() {
           const activeExporterNames = Array.from(day.exporterIds)
             .map((id: any) => {
               const exporter = exporters.find((e: any) => e._id === id);
-              return exporter?.name || 'Unknown';
+              return exporter?.companyTradingName || 'Unknown';
             });
 
           return {
@@ -384,7 +384,7 @@ export default function AdminReportsPage() {
             workerId: worker?.workerId || 'N/A',
             workerName: worker?.fullName || 'Unknown Worker',
             exporterId: exporter?._id || 'N/A',
-            exporterName: exporter?.name || 'Unknown Exporter',
+            exporterName: exporter?.companyTradingName || 'Unknown Exporter',
             bagId: bag.bagNumber || bag._id,
             sessionId: session?._id || 'N/A',
             checkInTime: workerAttendance?.checkInTime 

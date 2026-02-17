@@ -29,6 +29,10 @@ const userSchema = new Schema(
             required: true,
             trim: true,
         },
+        profilePicture: {
+            type: String,
+            default: '',
+        },
         exporterId: {
             type: Schema.Types.ObjectId,
             ref: 'Exporter',

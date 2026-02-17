@@ -203,12 +203,8 @@ curl http://localhost:3000/api/workers/WORKER_ID \
 # Update worker
 curl -X PUT http://localhost:3000/api/workers/WORKER_ID \
   -H "Content-Type: application/json" \
-  -H "Cookie: token=YOUR_TOKEN" \
-  -d '{"phone":"+250788111222"}'
-```
-
-### Attendance API
-
+  -H "Cookie: token=YOUR_TOKEN
+  
 ```bash
 # Check-in worker
 curl -X POST http://localhost:3000/api/attendance/checkin \

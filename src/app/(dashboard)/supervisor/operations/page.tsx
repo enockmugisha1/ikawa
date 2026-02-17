@@ -14,7 +14,10 @@ import {
     Clock,
     ChevronDown,
     ChevronUp,
-    Search
+    Search,
+    Weight,
+    Building2,
+    DollarSign
 } from 'lucide-react';
 
 interface Worker {
@@ -45,7 +48,7 @@ interface Session {
     };
     exporterId: {
         _id: string;
-        name: string;
+        companyTradingName: string;
     };
     startTime: string;
     status: string;
@@ -58,9 +61,10 @@ export default function OperationsPage() {
     const [sessions, setSessions] = useState<Session[]>([]);
     const [exporters, setExporters] = useState<any[]>([]);
     const [loading, setLoading] = useState(false);
-    const [showSessions, setShowSessions] = useState(true); // Collapsible sessions panel
-    const [searchWorkerId, setSearchWorkerId] = useState(''); // Quick search by Worker ID
+    const [showSessions, setShowSessions] = useState(true);
+    const [searchWorkerId, setSearchWorkerId] = useState('');
     const [currentTime, setCurrentTime] = useState('');
+    const [operationsMetrics, setOperationsMetrics] = useState<any>(null);
 
     useEffect(() => {
         // Set initial time and update every second
@@ -86,6 +90,7 @@ export default function OperationsPage() {
         fetchAttendance();
         fetchSessions();
         fetchExporters();
+        fetchOperationsMetrics();
     }, []);
 
     const fetchWorkers = async () => {
@@ -125,6 +130,16 @@ export default function OperationsPage() {
             setExporters(data.exporters || []);
         } catch (error) {
             console.error('Error fetching exporters:', error);
+        }
+    };
+
+    const fetchOperationsMetrics = async () => {
+        try {
+            const res = await fetch('/api/operations/metrics');
+            const data = await res.json();
+            setOperationsMetrics(data.metrics);
+        } catch (error) {
+            console.error('Error fetching operations metrics:', error);
         }
     };
 
@@ -283,7 +298,7 @@ export default function OperationsPage() {
             fetchSessions(); // Refresh data
             fetchAttendance(); // Refresh attendance
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : 'Failed to record bag');
+            toast.error(error instanceof Error ? error.message : 'Failed to assign bag');
         } finally {
             setLoading(false);
         }
@@ -307,6 +322,75 @@ export default function OperationsPage() {
                     <p className="text-gray-600">
                         Manage worker check-in, exporter assignments, and bag recording
                     </p>
+                </div>
+            </div>
+
+            {/* Operations Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-11 h-11 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <Package className="w-6 h-6 text-purple-600" />
+                        </div>
+                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <p className="text-sm text-gray-600 font-medium">Bags Assigned Today</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                        {operationsMetrics?.bagsToday || 0}
+                    </p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-11 h-11 bg-orange-100 rounded-xl flex items-center justify-center">
+                            <Weight className="w-6 h-6 text-orange-600" />
+                        </div>
+                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                    </div>
+                    <p className="text-sm text-gray-600 font-medium">Total Kilograms</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                        {operationsMetrics?.totalKilogramsToday?.toLocaleString() || 0}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">kg today</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-11 h-11 bg-teal-100 rounded-xl flex items-center justify-center">
+                            <Users className="w-6 h-6 text-teal-600" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-gray-600 font-medium">Avg Workers/Bag</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                        {operationsMetrics?.avgWorkersPerBag?.toFixed(1) || 0}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">workers per bag</p>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center">
+                            <Clock className="w-6 h-6 text-indigo-600" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-gray-600 font-medium">Total Hours Today</p>
+                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                        {operationsMetrics?.totalHoursToday?.toFixed(1) || 0}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-1">hours worked</p>
+                </div>
+
+                <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl shadow-sm border border-pink-200 p-5 hover:shadow-md transition-shadow">
+                    <div className="flex items-center justify-between mb-3">
+                        <div className="w-11 h-11 bg-pink-500 rounded-xl flex items-center justify-center">
+                            <Building2 className="w-6 h-6 text-white" />
+                        </div>
+                    </div>
+                    <p className="text-sm text-pink-900 font-medium">Exporters Served</p>
+                    <p className="text-3xl font-bold text-pink-900 mt-1">
+                        {operationsMetrics?.exportersServedToday || 0}
+                    </p>
+                    <p className="text-xs text-pink-700 mt-1">Active today</p>
                 </div>
             </div>
 
@@ -362,7 +446,7 @@ export default function OperationsPage() {
                         {[
                             { id: 'checkin', label: 'Check-in', icon: UserCheck },
                             { id: 'assign', label: 'Assign Exporter', icon: Link2 },
-                            { id: 'bags', label: 'Record Bags', icon: Package },
+                            { id: 'bags', label: 'Assign Bags', icon: Package },
                             { id: 'checkout', label: 'Check-out', icon: UserX },
                         ].map((tab) => {
                             const Icon = tab.icon;
@@ -629,7 +713,7 @@ export default function OperationsPage() {
                                                         <td className="px-6 py-4">
                                                             {hasActiveSession && activeSession ? (
                                                                 <div className="flex items-center gap-2">
-                                                                    <span className="font-medium text-gray-900">{activeSession.exporterId.name}</span>
+                                                                    <span className="font-medium text-gray-900">{activeSession.exporterId.companyTradingName}</span>
                                                                     <span className="text-xs text-gray-500">
                                                                         (since {new Date(activeSession.startTime).toLocaleTimeString('en-US', {
                                                                             hour: '2-digit',
@@ -697,13 +781,13 @@ export default function OperationsPage() {
                                     <option value="">-- Select Exporter Company --</option>
                                     {exporters.map((exp) => (
                                         <option key={exp._id} value={exp._id}>
-                                            {exp.name}
+                                            {exp.companyTradingName}
                                         </option>
                                     ))}
                                 </select>
                                 {bagFormData.exporterId && (
                                     <p className="mt-2 text-sm text-blue-700">
-                                        ✓ Showing workers assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.name}
+                                        ✓ Showing workers assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}
                                     </p>
                                 )}
                             </div>
@@ -786,7 +870,7 @@ export default function OperationsPage() {
                                                                             <Link2 className="w-4 h-4 text-blue-600" />
                                                                         </div>
                                                                         <span className="text-sm font-medium text-gray-900">
-                                                                            {session.exporterId.name}
+                                                                            {session.exporterId.companyTradingName}
                                                                         </span>
                                                                     </div>
                                                                 </td>
@@ -803,7 +887,7 @@ export default function OperationsPage() {
                                                     <tr>
                                                         <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                                                             <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                                            <p>No workers currently assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.name}</p>
+                                                            <p>No workers currently assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}</p>
                                                             <p className="text-sm text-gray-400 mt-1">Assign workers in the "Assign Exporter" tab first</p>
                                                         </td>
                                                     </tr>
@@ -833,7 +917,7 @@ export default function OperationsPage() {
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                    <span>• Exporter: <strong>{exporters.find(e => e._id === bagFormData.exporterId)?.name}</strong></span>
+                                                    <span>• Exporter: <strong>{exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}</strong></span>
                                                     <span>• Weight: <strong>60kg</strong></span>
                                                     <span>• Workers: <strong>{bagFormData.workers.length}</strong></span>
                                                 </div>
@@ -851,7 +935,7 @@ export default function OperationsPage() {
                                                 ) : (
                                                     <>
                                                         <Package className="w-4 h-4" />
-                                                        Record Bag
+                                                        Assign Bag
                                                     </>
                                                 )}
                                             </button>
@@ -955,7 +1039,7 @@ export default function OperationsPage() {
                                                         <td className="px-6 py-4">
                                                             {hasSession && session ? (
                                                                 <div className="flex flex-col gap-1">
-                                                                    <span className="text-sm font-medium text-gray-900">{session.exporterId.name}</span>
+                                                                    <span className="text-sm font-medium text-gray-900">{session.exporterId.companyTradingName}</span>
                                                                     <span className="text-xs text-gray-500">Close session on checkout</span>
                                                                 </div>
                                                             ) : (
@@ -1053,7 +1137,7 @@ export default function OperationsPage() {
                                                             <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
                                                                 <Link2 className="w-3.5 h-3.5 text-blue-600" />
                                                             </div>
-                                                            <span className="text-sm font-medium text-gray-900">{session.exporterId.name}</span>
+                                                            <span className="text-sm font-medium text-gray-900">{session.exporterId.companyTradingName}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-3">

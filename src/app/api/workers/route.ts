@@ -92,8 +92,14 @@ export async function POST(request: NextRequest) {
         const workerId = generateWorkerId();
         console.log('[Workers API] Generated worker ID:', workerId);
 
+        // Clean up empty string values for optional ObjectId fields
+        const cleanedBody = { ...body };
+        if (cleanedBody.facilityId === '' || cleanedBody.facilityId === null) {
+            delete cleanedBody.facilityId;
+        }
+
         const worker = await WorkerModel.create({
-            ...body,
+            ...cleanedBody,
             workerId,
             enrollmentDate: new Date(),
             consentTimestamp: new Date(),

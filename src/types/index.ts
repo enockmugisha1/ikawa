@@ -5,6 +5,7 @@ export interface User {
     role: 'supervisor' | 'admin' | 'exporter';
     name: string;
     phone: string;
+    profilePicture?: string;
     exporterId?: string;
     facilityId?: string;
     isActive: boolean;
@@ -44,7 +45,8 @@ export interface Worker {
 export interface Exporter {
     _id: string;
     exporterCode: string;
-    name: string;
+    companyTradingName: string;
+    companyAddress: string;
     contactPerson: string;
     phone: string;
     email: string;

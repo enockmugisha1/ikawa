@@ -51,8 +51,7 @@ const sessionSchema = new Schema(
 );
 
 // Indexes
-sessionSchema.index({ workerId: 1, date: 1 });
-sessionSchema.index({ exporterId: 1, date: 1 });
+sessionSchema.index({ workerId: 1, date: 1 }, { unique: false });
 sessionSchema.index({ status: 1 });
 sessionSchema.index({ attendanceId: 1 });
 

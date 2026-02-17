@@ -39,7 +39,7 @@ export default function SupervisorLayout({ children }: { children: ReactNode }) 
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors">
+        <div className="min-h-screen bg-gray-50 dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 transition-colors">
             {/* Top Navigation */}
             <nav className="bg-white dark:bg-gray-900 shadow-md border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50 transition-colors">
                 <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">

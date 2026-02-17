@@ -40,7 +40,7 @@ export async function PUT(request: Request) {
         await dbConnect();
 
         const body = await request.json();
-        const { name, phone } = body;
+        const { name, phone, profilePicture } = body;
 
         const user = await UserModel.findByIdAndUpdate(
             currentUser.userId,
@@ -48,6 +48,7 @@ export async function PUT(request: Request) {
                 $set: {
                     name: name || undefined,
                     phone: phone || undefined,
+                    profilePicture: profilePicture || undefined,
                 }
             },
             { new: true, runValidators: true }

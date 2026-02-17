@@ -9,24 +9,17 @@ import {
     Weight,
     Clock,
     BarChart3,
-    AlertCircle
+    AlertCircle,
+    DollarSign
 } from 'lucide-react';
 import { ExportButton } from '@/components/export/ExportButton';
 import { ExportData } from '@/lib/export';
 
 export default function ExporterDashboard() {
     const [bags, setBags] = useState<any[]>([]);
+    const [analytics, setAnalytics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [exporterInfo, setExporterInfo] = useState({ name: 'Exporter', code: 'EXP' });
-    const [stats, setStats] = useState({
-        totalBags: 0,
-        workersEngaged: 0,
-        totalWeight: 0,
-        bagsToday: 0,
-        bagsThisWeek: 0,
-        bagsThisMonth: 0,
-        avgBagsPerDay: 0,
-    });
 
     useEffect(() => {
         fetchData();
@@ -35,61 +28,25 @@ export default function ExporterDashboard() {
     const fetchData = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/bags');
-            const data = await res.json();
-            const myBags = data.bags || [];
+            const [bagsRes, analyticsRes] = await Promise.all([
+                fetch('/api/bags'),
+                fetch('/api/analytics/exporter'),
+            ]);
 
+            const bagsData = await bagsRes.json();
+            const analyticsData = await analyticsRes.json();
+            
+            const myBags = bagsData.bags || [];
             setBags(myBags);
+            setAnalytics(analyticsData.analytics);
             
             // Get exporter info from first bag or use defaults
             if (myBags.length > 0 && myBags[0].exporterId) {
                 setExporterInfo({
-                    name: myBags[0].exporterId.name || 'Exporter',
+                    name: myBags[0].exporterId.companyTradingName || 'Exporter',
                     code: myBags[0].exporterId.exporterCode || 'EXP'
                 });
             }
-
-            const uniqueWorkers = new Set();
-            myBags.forEach((bag: any) => {
-                bag.workers.forEach((w: any) => uniqueWorkers.add(w.workerId._id));
-            });
-
-            const totalWeight = myBags.reduce((sum: number, bag: any) => sum + (bag.weight || 60), 0);
-            
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-            const bagsToday = myBags.filter((bag: any) => {
-                const bagDate = new Date(bag.date);
-                bagDate.setHours(0, 0, 0, 0);
-                return bagDate.getTime() === today.getTime();
-            }).length;
-
-            const weekAgo = new Date(today);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            const bagsThisWeek = myBags.filter((bag: any) => 
-                new Date(bag.date) >= weekAgo
-            ).length;
-
-            const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
-            const bagsThisMonth = myBags.filter((bag: any) => 
-                new Date(bag.date) >= monthStart
-            ).length;
-
-            const oldestBag = myBags.length > 0 
-                ? new Date(Math.min(...myBags.map((b: any) => new Date(b.date).getTime())))
-                : today;
-            const daysSinceStart = Math.max(1, Math.ceil((today.getTime() - oldestBag.getTime()) / (1000 * 60 * 60 * 24)));
-            const avgBagsPerDay = myBags.length / daysSinceStart;
-
-            setStats({
-                totalBags: myBags.length,
-                workersEngaged: uniqueWorkers.size,
-                totalWeight,
-                bagsToday,
-                bagsThisWeek,
-                bagsThisMonth,
-                avgBagsPerDay,
-            });
         } catch (error) {
             console.error('Error fetching data:', error);
         } finally {
@@ -110,10 +67,10 @@ export default function ExporterDashboard() {
             exporterCode: exporterInfo.code,
             bags: exportBags,
             summary: {
-                totalBags: stats.totalBags,
-                totalWeight: stats.totalWeight,
-                totalWorkers: stats.workersEngaged,
-                averageWeight: stats.totalBags > 0 ? stats.totalWeight / stats.totalBags : 0
+                totalBags: analytics?.totalBags || 0,
+                totalWeight: analytics?.totalWeight || 0,
+                totalWorkers: analytics?.workersEngaged || 0,
+                averageWeight: analytics?.totalBags > 0 ? analytics.totalWeight / analytics.totalBags : 0
             }
         };
     };
@@ -148,54 +105,101 @@ export default function ExporterDashboard() {
 
             {/* Main Stats Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-3">
-                        <Package className="w-8 h-8 sm:w-10 sm:h-10 text-blue-100" />
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Package className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600" />
                         </div>
                     </div>
-                    <p className="text-blue-100 text-xs sm:text-sm font-medium">Total Bags</p>
-                    <p className="mt-2 text-3xl sm:text-4xl font-bold">{stats.totalBags}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-blue-100">All time processed</p>
+                    <p className="text-gray-700 text-xs sm:text-sm font-medium">Total Bags</p>
+                    <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">{analytics?.totalBags || 0}</p>
+                    <p className="mt-2 text-xs sm:text-sm text-gray-600">All time processed</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-3">
-                        <Users className="w-8 h-8 sm:w-10 sm:h-10 text-purple-100" />
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Users className="w-8 h-8 sm:w-10 sm:h-10 text-purple-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 text-purple-600" />
                         </div>
                     </div>
-                    <p className="text-purple-100 text-xs sm:text-sm font-medium">Workers Engaged</p>
-                    <p className="mt-2 text-3xl sm:text-4xl font-bold">{stats.workersEngaged}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-purple-100">Unique workers</p>
+                    <p className="text-gray-700 text-xs sm:text-sm font-medium">Workers Engaged</p>
+                    <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">{analytics?.workersEngaged || 0}</p>
+                    <p className="mt-2 text-xs sm:text-sm text-gray-600">Unique workers</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-3">
-                        <Weight className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-100" />
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Weight className="w-8 h-8 sm:w-10 sm:h-10 text-emerald-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600" />
                         </div>
                     </div>
-                    <p className="text-emerald-100 text-xs sm:text-sm font-medium">Total Weight</p>
-                    <p className="mt-2 text-3xl sm:text-4xl font-bold">{stats.totalWeight.toLocaleString()}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-emerald-100">kg processed</p>
+                    <p className="text-gray-700 text-xs sm:text-sm font-medium">Total Weight</p>
+                    <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">{analytics?.totalWeight?.toLocaleString() || 0}</p>
+                    <p className="mt-2 text-xs sm:text-sm text-gray-600">kg processed</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-500 to-red-600 rounded-xl shadow-lg p-4 sm:p-6 text-white transform hover:scale-105 transition-transform">
+                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
                     <div className="flex items-center justify-between mb-3">
-                        <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-orange-100" />
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6" />
+                        <Clock className="w-8 h-8 sm:w-10 sm:h-10 text-orange-600" />
+                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-orange-600" />
                         </div>
                     </div>
-                    <p className="text-orange-100 text-xs sm:text-sm font-medium">Daily Average</p>
-                    <p className="mt-2 text-3xl sm:text-4xl font-bold">{stats.avgBagsPerDay.toFixed(1)}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-orange-100">bags per day</p>
+                    <p className="text-gray-700 text-xs sm:text-sm font-medium">Daily Average</p>
+                    <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">{analytics?.avgBagsPerDay?.toFixed(1) || 0}</p>
+                    <p className="mt-2 text-xs sm:text-sm text-gray-600">bags per day</p>
                 </div>
             </div>
+
+            {/* Financial Metrics */}
+            {analytics && analytics.ratePerBag > 0 && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl shadow-lg border border-green-200 p-4 sm:p-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-lg flex items-center justify-center">
+                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-green-600" />
+                        </div>
+                        <p className="text-gray-700 text-xs sm:text-sm font-medium">Cost Today</p>
+                        <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">
+                            ${analytics.costToday?.toLocaleString() || 0}
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm text-gray-600">{analytics.bagsToday || 0} bags @ ${analytics.ratePerBag}/bag</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg border border-blue-200 p-4 sm:p-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-lg flex items-center justify-center">
+                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                            </div>
+                            <Calendar className="w-5 h-5 text-blue-600" />
+                        </div>
+                        <p className="text-gray-700 text-xs sm:text-sm font-medium">Cost This Month</p>
+                        <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">
+                            ${analytics.costThisMonth?.toLocaleString() || 0}
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm text-gray-600">{analytics.bagsThisMonth || 0} bags processed</p>
+                    </div>
+
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl shadow-lg border border-purple-200 p-4 sm:p-6">
+                        <div className="flex items-center justify-between mb-3">
+                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-lg flex items-center justify-center">
+                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                            </div>
+                            <BarChart3 className="w-5 h-5 text-purple-600" />
+                        </div>
+                        <p className="text-gray-700 text-xs sm:text-sm font-medium">Total Cost</p>
+                        <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">
+                            ${analytics.totalCost?.toLocaleString() || 0}
+                        </p>
+                        <p className="mt-2 text-xs sm:text-sm text-gray-600">All time charges</p>
+                    </div>
+                </div>
+            )}
 
             {/* Period Stats */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-200">
@@ -205,51 +209,51 @@ export default function ExporterDashboard() {
                 </div>
                 <div className="p-4 sm:p-6">
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                        <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-100">
+                        <div className="bg-white rounded-lg p-4 border border-blue-200">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                                    <Calendar className="w-5 h-5 text-white" />
+                                <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                                    <Calendar className="w-5 h-5 text-blue-600" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-600 font-medium">Today</p>
-                                    <p className="text-2xl font-bold text-gray-900">{stats.bagsToday}</p>
+                                    <p className="text-2xl font-bold text-gray-900">{analytics?.bagsToday || 0}</p>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between text-xs text-blue-600">
                                 <span>Bags processed</span>
-                                <span className="font-semibold">{stats.bagsToday > 0 ? '✓ Active' : '• Pending'}</span>
+                                <span className="font-semibold">{analytics?.bagsToday > 0 ? '✓ Active' : '• Pending'}</span>
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg p-4 border border-purple-100">
+                        <div className="bg-white rounded-lg p-4 border border-purple-200">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                                    <BarChart3 className="w-5 h-5 text-white" />
+                                <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                                    <BarChart3 className="w-5 h-5 text-purple-600" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-600 font-medium">This Week</p>
-                                    <p className="text-2xl font-bold text-gray-900">{stats.bagsThisWeek}</p>
+                                    <p className="text-2xl font-bold text-gray-900">{analytics?.bagsThisWeek || 0}</p>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between text-xs text-purple-600">
                                 <span>Last 7 days</span>
-                                <span className="font-semibold">{(stats.bagsThisWeek / 7).toFixed(1)} avg/day</span>
+                                <span className="font-semibold">{((analytics?.bagsThisWeek || 0) / 7).toFixed(1)} avg/day</span>
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg p-4 border border-emerald-100">
+                        <div className="bg-white rounded-lg p-4 border border-emerald-200">
                             <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-                                    <TrendingUp className="w-5 h-5 text-white" />
+                                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                    <TrendingUp className="w-5 h-5 text-emerald-600" />
                                 </div>
                                 <div>
                                     <p className="text-xs text-gray-600 font-medium">This Month</p>
-                                    <p className="text-2xl font-bold text-gray-900">{stats.bagsThisMonth}</p>
+                                    <p className="text-2xl font-bold text-gray-900">{analytics?.bagsThisMonth || 0}</p>
                                 </div>
                             </div>
                             <div className="flex items-center justify-between text-xs text-emerald-600">
                                 <span>Monthly total</span>
-                                <span className="font-semibold">{((stats.bagsThisMonth / new Date().getDate()) * 30).toFixed(0)} projected</span>
+                                <span className="font-semibold">{(((analytics?.bagsThisMonth || 0) / new Date().getDate()) * 30).toFixed(0)} projected</span>
                             </div>
                         </div>
                     </div>

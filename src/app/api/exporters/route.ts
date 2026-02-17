@@ -19,7 +19,7 @@ export async function GET() {
             query._id = currentUser.exporterId;
         }
 
-        const exporters = await ExporterModel.find(query).sort({ name: 1 });
+        const exporters = await ExporterModel.find(query).sort({ companyTradingName: 1 });
 
         return NextResponse.json({ exporters });
     } catch (error) {

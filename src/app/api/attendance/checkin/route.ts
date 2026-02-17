@@ -38,19 +38,21 @@ export async function POST(request: NextRequest) {
         if (!facilityId) {
             const FacilityModel = (await import('@/models/Facility')).default;
             const facility = await FacilityModel.findOne({ isActive: true });
+            console.log('[Check-in] Found facility from database:', facility ? facility._id : 'none');
             if (facility) {
                 facilityId = facility._id;
             }
         }
 
         if (!facilityId) {
+            console.error('[Check-in] No facilityId available after all fallbacks');
             return NextResponse.json(
-                { error: 'No facility available. Please contact administrator.' },
+                { error: 'No facility available. Please create a facility first or contact administrator.' },
                 { status: 400 }
             );
         }
 
-        console.log('[Check-in] Using facilityId:', facilityId);
+        console.log('[Check-in] Final facilityId to use:', facilityId);
 
         // Validate worker exists and is active
         const worker = await WorkerModel.findById(workerId);

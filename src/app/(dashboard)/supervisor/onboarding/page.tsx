@@ -33,11 +33,16 @@ export default function OnboardingPage() {
                 const coops = data.cooperatives || [];
                 setCooperatives(coops);
                 
-                // Set first cooperative as default
-                if (coops.length > 0 && !formData.cooperativeId) {
+                // Auto-select Umucyo Women Cooperative if it exists
+                const umucyo = coops.find((coop: any) => 
+                    coop.name.toLowerCase().includes('umucyo') || 
+                    coop.code.toLowerCase().includes('umucyo')
+                );
+                
+                if (umucyo && !formData.cooperativeId) {
                     setFormData(prev => ({
                         ...prev,
-                        cooperativeId: coops[0]._id
+                        cooperativeId: umucyo._id
                     }));
                 }
             }
@@ -82,10 +87,15 @@ export default function OnboardingPage() {
 
         try {
             // For photo, we'll use a placeholder for now
-            const payload = {
+            const payload: any = {
                 ...formData,
                 photo: '/uploads/placeholder.jpg',
             };
+
+            // Remove empty facilityId if present
+            if (!payload.facilityId || payload.facilityId === '') {
+                delete payload.facilityId;
+            }
 
             console.log('[Onboarding] Submitting payload:', payload);
 
@@ -209,6 +219,27 @@ export default function OnboardingPage() {
                                 }
                                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                             />
+                        </div>
+
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                Cooperative *
+                            </label>
+                            <select
+                                required
+                                value={formData.cooperativeId}
+                                onChange={(e) =>
+                                    setFormData({ ...formData, cooperativeId: e.target.value })
+                                }
+                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                            >
+                                <option value="">Select a cooperative</option>
+                                {cooperatives.map((coop) => (
+                                    <option key={coop._id} value={coop._id}>
+                                        {coop.name} ({coop.code})
+                                    </option>
+                                ))}
+                            </select>
                         </div>
                     </div>
                 </div>
