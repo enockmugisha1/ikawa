@@ -6,7 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 interface Exporter {
     _id: string;
     exporterCode: string;
-    tinNumber: string;
+    tinNumber?: string;
     companyTradingName: string;
     companyAddress: string;
     contactPerson: string;
@@ -80,7 +80,7 @@ export default function AdminExportersPage() {
         setEditingExporter(exporter);
         setFormData({
             exporterCode: exporter.exporterCode,
-            tinNumber: exporter.tinNumber,
+            tinNumber: exporter.tinNumber || '',
             companyTradingName: exporter.companyTradingName,
             companyAddress: exporter.companyAddress,
             contactPerson: exporter.contactPerson,
@@ -174,7 +174,9 @@ export default function AdminExportersPage() {
                                     <h3 className="text-lg font-semibold text-gray-900">
                                         {exporter.companyTradingName}
                                     </h3>
-                                    <p className="text-sm text-gray-500">TIN: {exporter.tinNumber}</p>
+                                    <p className="text-sm text-gray-500">
+                                        {exporter.tinNumber ? `TIN: ${exporter.tinNumber}` : exporter.exporterCode}
+                                    </p>
                                 </div>
                                 <span
                                     className={`px-2 py-1 text-xs font-semibold rounded-full ${exporter.isActive
@@ -255,7 +257,7 @@ export default function AdminExportersPage() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    TIN Number
+                                    TIN Number (Optional)
                                 </label>
                                 <input
                                     type="text"
@@ -264,7 +266,6 @@ export default function AdminExportersPage() {
                                         setFormData({ ...formData, tinNumber: e.target.value })
                                     }
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                    required
                                 />
                             </div>
                             <div>

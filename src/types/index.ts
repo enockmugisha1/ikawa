@@ -46,7 +46,7 @@ export interface Worker {
 export interface Exporter {
     _id: string;
     exporterCode: string;
-    tinNumber: string;
+    tinNumber?: string;
     companyTradingName: string;
     companyAddress: string;
     contactPerson: string;

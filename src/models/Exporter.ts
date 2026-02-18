@@ -11,9 +11,8 @@ const exporterSchema = new Schema<Exporter>(
         },
         tinNumber: {
             type: String,
-            required: true,
-            unique: true,
             trim: true,
+            sparse: true,
         },
         companyTradingName: {
             type: String,
