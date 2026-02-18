@@ -446,7 +446,7 @@ export default function WorkersPage() {
                     </div>
                     <p className="text-sm text-gray-600 font-medium">Total Labor Costs</p>
                     <p className="text-3xl font-bold text-gray-900 mt-1">
-                        ${workerStats?.totalLaborCosts?.toLocaleString() || 0}
+                        FRw {workerStats?.totalLaborCosts?.toLocaleString() || 0}
                     </p>
                     <p className="text-xs text-gray-500 mt-1">All time</p>
                 </div>
@@ -541,7 +541,7 @@ export default function WorkersPage() {
                                         </div>
                                         <p className="text-sm font-medium text-emerald-900">Earnings to Date</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-emerald-900">${workerDetails.earnings.toLocaleString()}</p>
+                                    <p className="text-3xl font-bold text-emerald-900">FRw {workerDetails.earnings.toLocaleString()}</p>
                                     <p className="text-sm text-emerald-700 mt-1">Total Earned</p>
                                 </div>
 

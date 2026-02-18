@@ -166,9 +166,9 @@ export default function ExporterDashboard() {
                         </div>
                         <p className="text-gray-700 text-xs sm:text-sm font-medium">Cost Today</p>
                         <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">
-                            ${analytics.costToday?.toLocaleString() || 0}
+                            FRw {analytics.costToday?.toLocaleString() || 0}
                         </p>
-                        <p className="mt-2 text-xs sm:text-sm text-gray-600">{analytics.bagsToday || 0} bags @ ${analytics.ratePerBag}/bag</p>
+                        <p className="mt-2 text-xs sm:text-sm text-gray-600">{analytics.bagsToday || 0} bags @ FRw {analytics.ratePerBag}/bag</p>
                     </div>
 
                     <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl shadow-lg border border-blue-200 p-4 sm:p-6">
@@ -180,7 +180,7 @@ export default function ExporterDashboard() {
                         </div>
                         <p className="text-gray-700 text-xs sm:text-sm font-medium">Cost This Month</p>
                         <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">
-                            ${analytics.costThisMonth?.toLocaleString() || 0}
+                            FRw {analytics.costThisMonth?.toLocaleString() || 0}
                         </p>
                         <p className="mt-2 text-xs sm:text-sm text-gray-600">{analytics.bagsThisMonth || 0} bags processed</p>
                     </div>
@@ -194,7 +194,7 @@ export default function ExporterDashboard() {
                         </div>
                         <p className="text-gray-700 text-xs sm:text-sm font-medium">Total Cost</p>
                         <p className="mt-2 text-3xl sm:text-4xl font-bold text-gray-900">
-                            ${analytics.totalCost?.toLocaleString() || 0}
+                            FRw {analytics.totalCost?.toLocaleString() || 0}
                         </p>
                         <p className="mt-2 text-xs sm:text-sm text-gray-600">All time charges</p>
                     </div>

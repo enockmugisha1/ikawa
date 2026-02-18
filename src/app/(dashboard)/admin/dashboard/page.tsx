@@ -193,7 +193,7 @@ export default function AdminDashboard() {
                             </div>
                             <div>
                                 <p className="text-sm text-gray-600">Today's Costs</p>
-                                <p className="text-2xl font-bold text-gray-900">${analytics?.totalCostsToday?.toLocaleString() || 0}</p>
+                                <p className="text-2xl font-bold text-gray-900">FRw {analytics?.totalCostsToday?.toLocaleString() || 0}</p>
                                 <p className="text-xs text-green-600 mt-1">total charges</p>
                             </div>
                         </div>

@@ -146,7 +146,7 @@ export default function SupervisorDashboard() {
                         </div>
                         <p className="text-emerald-900 text-sm font-medium">Labor Costs Today</p>
                         <p className="mt-2 text-4xl font-bold text-emerald-900">
-                            ${analytics?.totalLaborCostsToday?.toLocaleString() || 0}
+                            FRw {analytics?.totalLaborCostsToday?.toLocaleString() || 0}
                         </p>
                         <p className="mt-2 text-sm text-emerald-700 font-medium">
                             {analytics?.totalHoursWorked || 0} hrs worked
