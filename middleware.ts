@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { verifyToken } from '@/lib/auth';
+import { verifyTokenEdge } from '@/lib/auth-edge';
 
 // Public routes that don't require authentication
 const publicRoutes = ['/login', '/signup', '/'];
@@ -12,7 +12,7 @@ const routeAccess: Record<string, string[]> = {
     '/exporter': ['exporter', 'admin'],
 };
 
-export default function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Debug: Check if JWT_SECRET is available
@@ -26,7 +26,7 @@ export default function middleware(request: NextRequest) {
         console.log('[Middleware] Token found, length:', token.length, 'first 20 chars:', token.substring(0, 20));
     }
 
-    const user = token ? verifyToken(token) : null;
+    const user = token ? await verifyTokenEdge(token) : null;
 
     // Debug logging
     console.log('[Middleware]', pathname, '- Token exists:', !!token, '- User:', user?.email || 'none', '- Role:', user?.role || 'none');
