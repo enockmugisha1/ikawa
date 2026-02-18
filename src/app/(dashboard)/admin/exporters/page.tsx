@@ -6,6 +6,7 @@ import toast, { Toaster } from 'react-hot-toast';
 interface Exporter {
     _id: string;
     exporterCode: string;
+    tinNumber: string;
     companyTradingName: string;
     companyAddress: string;
     contactPerson: string;
@@ -21,6 +22,7 @@ export default function AdminExportersPage() {
     const [editingExporter, setEditingExporter] = useState<Exporter | null>(null);
     const [formData, setFormData] = useState({
         exporterCode: '',
+        tinNumber: '',
         companyTradingName: '',
         companyAddress: '',
         contactPerson: '',
@@ -61,6 +63,7 @@ export default function AdminExportersPage() {
             setShowAddForm(false);
             setFormData({
                 exporterCode: '',
+                tinNumber: '',
                 companyTradingName: '',
                 companyAddress: '',
                 contactPerson: '',
@@ -77,6 +80,7 @@ export default function AdminExportersPage() {
         setEditingExporter(exporter);
         setFormData({
             exporterCode: exporter.exporterCode,
+            tinNumber: exporter.tinNumber,
             companyTradingName: exporter.companyTradingName,
             companyAddress: exporter.companyAddress,
             contactPerson: exporter.contactPerson,
@@ -102,6 +106,7 @@ export default function AdminExportersPage() {
             setEditingExporter(null);
             setFormData({
                 exporterCode: '',
+                tinNumber: '',
                 companyTradingName: '',
                 companyAddress: '',
                 contactPerson: '',
@@ -169,7 +174,7 @@ export default function AdminExportersPage() {
                                     <h3 className="text-lg font-semibold text-gray-900">
                                         {exporter.companyTradingName}
                                     </h3>
-                                    <p className="text-sm text-gray-500">{exporter.exporterCode}</p>
+                                    <p className="text-sm text-gray-500">TIN: {exporter.tinNumber}</p>
                                 </div>
                                 <span
                                     className={`px-2 py-1 text-xs font-semibold rounded-full ${exporter.isActive
@@ -246,6 +251,20 @@ export default function AdminExportersPage() {
                                     className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                     required
                                     disabled={!!editingExporter}
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    TIN Number
+                                </label>
+                                <input
+                                    type="text"
+                                    value={formData.tinNumber}
+                                    onChange={(e) =>
+                                        setFormData({ ...formData, tinNumber: e.target.value })
+                                    }
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                    required
                                 />
                             </div>
                             <div>
@@ -332,6 +351,7 @@ export default function AdminExportersPage() {
                                         setEditingExporter(null);
                                         setFormData({
                                             exporterCode: '',
+                                            tinNumber: '',
                                             companyTradingName: '',
                                             companyAddress: '',
                                             contactPerson: '',

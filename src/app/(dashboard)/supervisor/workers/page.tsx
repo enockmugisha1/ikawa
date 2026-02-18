@@ -12,6 +12,8 @@ interface Worker {
     gender: string;
     status: string;
     enrollmentDate: string;
+    earnings?: number;
+    hourlyRate?: number;
 }
 
 interface WorkerStats {
@@ -96,6 +98,23 @@ export default function WorkersPage() {
             setWorkerStats(data.stats);
         } catch (error) {
             console.error('Error fetching worker stats:', error);
+        }
+    };
+
+    const handleUpdateHourlyRate = async (workerId: string, hourlyRate: number) => {
+        try {
+            const res = await fetch(`/api/workers/${workerId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ hourlyRate }),
+            });
+
+            if (!res.ok) throw new Error('Update failed');
+            
+            // Refresh workers list
+            fetchWorkers();
+        } catch (error) {
+            console.error('Error updating hourly rate:', error);
         }
     };
 
@@ -216,6 +235,37 @@ export default function WorkersPage() {
                     )}
                     {worker.status}
                 </span>
+            )
+        },
+        {
+            key: 'earnings',
+            label: 'Total Earnings',
+            sortable: true,
+            render: (worker) => (
+                <div className="flex items-center gap-2 text-gray-700">
+                    <DollarSign className="w-4 h-4 text-emerald-600" />
+                    <span className="font-semibold text-emerald-900">
+                        FRw {worker.earnings?.toLocaleString() || 0}
+                    </span>
+                </div>
+            )
+        },
+        {
+            key: 'hourlyRate',
+            label: 'Hourly Rate',
+            sortable: true,
+            render: (worker) => (
+                <div className="flex items-center gap-2">
+                    <input
+                        type="number"
+                        value={worker.hourlyRate || 50}
+                        onChange={(e) => handleUpdateHourlyRate(worker._id, parseFloat(e.target.value))}
+                        className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                        min="0"
+                        step="10"
+                    />
+                    <span className="text-xs text-gray-500">FRw/hr</span>
+                </div>
             )
         },
         {

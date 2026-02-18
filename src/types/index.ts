@@ -25,6 +25,7 @@ export interface Worker {
     cooperativeId: string;
     primaryRole: string;
     enrollmentDate: Date;
+    hourlyRate?: number;
     status: 'active' | 'inactive' | 'suspended';
     // Impact baseline
     previousWorkType?: string;
@@ -45,6 +46,7 @@ export interface Worker {
 export interface Exporter {
     _id: string;
     exporterCode: string;
+    tinNumber: string;
     companyTradingName: string;
     companyAddress: string;
     contactPerson: string;

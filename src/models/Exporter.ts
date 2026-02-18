@@ -9,6 +9,12 @@ const exporterSchema = new Schema<Exporter>(
             unique: true,
             uppercase: true,
         },
+        tinNumber: {
+            type: String,
+            required: true,
+            unique: true,
+            trim: true,
+        },
         companyTradingName: {
             type: String,
             required: true,

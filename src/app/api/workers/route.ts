@@ -48,7 +48,40 @@ export async function GET(request: NextRequest) {
             .limit(100);
 
         console.log('[Workers API] Found', workers.length, 'workers');
-        return NextResponse.json({ workers });
+        
+        // Calculate earnings for each worker
+        const SessionModel = (await import('@/models/Session')).default;
+        const workersWithEarnings = await Promise.all(
+            workers.map(async (worker) => {
+                const workerObj = worker.toObject();
+                const DEFAULT_HOURLY_RATE = workerObj.hourlyRate || 50;
+                
+                // Get all sessions for this worker
+                const workerSessions = await SessionModel.find({ workerId: worker._id })
+                    .select('startTime endTime status');
+                
+                let totalHours = 0;
+                workerSessions.forEach((session: any) => {
+                    if (session.endTime) {
+                        const hours = (new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / (1000 * 60 * 60);
+                        totalHours += hours;
+                    } else if (session.status === 'active') {
+                        const hours = (Date.now() - new Date(session.startTime).getTime()) / (1000 * 60 * 60);
+                        totalHours += hours;
+                    }
+                });
+                
+                const earnings = Math.round(totalHours * DEFAULT_HOURLY_RATE * 100) / 100;
+                
+                return {
+                    ...workerObj,
+                    earnings,
+                    hourlyRate: DEFAULT_HOURLY_RATE
+                };
+            })
+        );
+        
+        return NextResponse.json({ workers: workersWithEarnings });
     } catch (error) {
         console.error('[Workers API] Error:', error);
         return NextResponse.json(

@@ -51,6 +51,10 @@ const workerSchema = new Schema(
             type: Date,
             default: Date.now,
         },
+        hourlyRate: {
+            type: Number,
+            default: 50,
+        },
         status: {
             type: String,
             enum: ['active', 'inactive', 'suspended'],
