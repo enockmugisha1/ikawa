@@ -22,6 +22,7 @@ export default function SupervisorDashboard() {
     const [analytics, setAnalytics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
     useEffect(() => {
         fetchAnalytics();
@@ -33,6 +34,7 @@ export default function SupervisorDashboard() {
             const res = await fetch('/api/analytics/supervisor');
             const data = await res.json();
             setAnalytics(data.analytics);
+            setLastUpdated(new Date());
         } catch (error) {
             console.error('Error fetching analytics:', error);
         } finally {
@@ -49,94 +51,151 @@ export default function SupervisorDashboard() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center shadow-lg shadow-emerald-500/30">
-                            <TrendingUp className="w-6 h-6 text-white" />
-                        </div>
-                        <h1 className="text-3xl font-bold text-gray-900">Supervisor Dashboard</h1>
-                    </div>
-                    <p className="text-gray-600">
-                        Welcome back! Here's today's overview
-                    </p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                <button
-                    onClick={handleRefresh}
-                    disabled={refreshing}
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50"
-                >
-                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                    Refresh
-                </button>
+                
+                {/* Decorative gradient circles */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+                
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30 animate-bounce-once">
+                                <TrendingUp className="w-7 h-7 text-white" />
+                            </div>
+                            <h1 className="text-4xl font-bold text-white drop-shadow-lg">Supervisor Dashboard</h1>
+                        </div>
+                        <p className="text-white/90 text-lg ml-15">
+                            Welcome back! Here's today's overview
+                        </p>
+                        {lastUpdated && (
+                            <p className="text-xs text-white/70 mt-2 ml-15">
+                                Last updated: {lastUpdated.toLocaleTimeString()}
+                            </p>
+                        )}
+                    </div>
+                    <button
+                        onClick={handleRefresh}
+                        disabled={refreshing}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all disabled:opacity-50 shadow-lg"
+                    >
+                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                        Refresh
+                    </button>
+                </div>
+            </div>
+
+            {/* Quick Stats Summary Banner */}
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-emerald-600" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.workersCheckedInToday || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">workers today</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-purple-600" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.bagsToday || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">bags processed</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.totalHoursWorked || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">hours worked</span>
+                    </div>
+                </div>
             </div>
 
             {/* Stats Grid - High-Level Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
                 {/* Total Workers */}
-                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
                                 <Users className="w-6 h-6 text-blue-600" />
                             </div>
                             <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <p className="text-gray-600 text-sm font-medium">Total Workers</p>
-                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.totalWorkers || 0}</p>
-                        <p className="mt-2 text-sm text-emerald-600 font-medium">Active</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Workers</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                            {analytics?.totalWorkers || 0}
+                        </p>
+                        {analytics?.totalWorkers > 0 ? (
+                            <p className="mt-2 text-sm text-emerald-600 dark:text-emerald-400 font-medium">Active</p>
+                        ) : (
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No workers yet</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Workers Checked In Today */}
-                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-emerald-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
+                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
                                 <UserPlus className="w-6 h-6 text-emerald-600" />
                             </div>
                             <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <p className="text-gray-600 text-sm font-medium">Checked In Today</p>
-                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.workersCheckedInToday || 0}</p>
-                        <p className="mt-2 text-sm text-gray-600">On-site now</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Checked In Today</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.workersCheckedInToday || 0}</p>
+                        {analytics?.workersCheckedInToday > 0 ? (
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">On-site now</p>
+                        ) : (
+                            <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">Start checking in workers!</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Active Sessions */}
-                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-purple-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
                                 <Activity className="w-6 h-6 text-purple-600" />
                             </div>
                             {analytics?.activeSessions > 0 && (
                                 <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
                             )}
                         </div>
-                        <p className="text-gray-600 text-sm font-medium">Active Sessions</p>
-                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.activeSessions || 0}</p>
-                        <p className="mt-2 text-sm text-gray-600">Sorting now</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Active Sessions</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.activeSessions || 0}</p>
+                        {analytics?.activeSessions > 0 ? (
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Sorting now</p>
+                        ) : (
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">No active sorting sessions</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Bags Processed Today */}
-                <div className="relative overflow-hidden bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-amber-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center">
+                            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
                                 <Package className="w-6 h-6 text-amber-600" />
                             </div>
                             <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <p className="text-gray-600 text-sm font-medium">Bags Processed</p>
-                        <p className="mt-2 text-4xl font-bold text-gray-900">{analytics?.bagsToday || 0}</p>
-                        <p className="mt-2 text-sm text-gray-600">Today's output</p>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Bags Processed</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsToday || 0}</p>
+                        {analytics?.bagsToday > 0 ? (
+                            <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Today's output</p>
+                        ) : (
+                            <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">Ready to record bags!</p>
+                        )}
                     </div>
                 </div>
 
                 {/* Total Labor Costs Today */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl shadow-sm border border-emerald-200 p-6 hover:shadow-md transition-shadow">
+                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl shadow-sm border-l-4 border-l-emerald-600 border-t border-r border-b border-emerald-200 dark:border-emerald-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
@@ -144,11 +203,11 @@ export default function SupervisorDashboard() {
                             </div>
                             <TrendingUp className="w-5 h-5 text-emerald-600" />
                         </div>
-                        <p className="text-emerald-900 text-sm font-medium">Labor Costs Today</p>
-                        <p className="mt-2 text-4xl font-bold text-emerald-900">
+                        <p className="text-emerald-900 dark:text-emerald-300 text-sm font-medium">Labor Costs Today</p>
+                        <p className="mt-2 text-4xl font-bold text-emerald-900 dark:text-emerald-100">
                             FRw {analytics?.totalLaborCostsToday?.toLocaleString() || 0}
                         </p>
-                        <p className="mt-2 text-sm text-emerald-700 font-medium">
+                        <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-400 font-medium">
                             {analytics?.totalHoursWorked || 0} hrs worked
                         </p>
                     </div>
@@ -158,13 +217,13 @@ export default function SupervisorDashboard() {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Attendance Trend */}
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Attendance Trend</h3>
-                            <p className="text-sm text-gray-500 mt-1">Last 7 days</p>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Attendance Trend</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Last 7 days</p>
                         </div>
-                        <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
                             <Users className="w-5 h-5 text-emerald-600" />
                         </div>
                     </div>
@@ -206,13 +265,13 @@ export default function SupervisorDashboard() {
                 </div>
 
                 {/* Bags Processed Trend */}
-                <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-900">Bags Processed</h3>
-                            <p className="text-sm text-gray-500 mt-1">Last 7 days</p>
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bags Processed</h3>
+                            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Last 7 days</p>
                         </div>
-                        <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
                             <Package className="w-5 h-5 text-purple-600" />
                         </div>
                     </div>
@@ -252,59 +311,59 @@ export default function SupervisorDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
-                    <Activity className="w-5 h-5 text-gray-600" />
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
+                    <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     Quick Actions
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <a
                         href="/supervisor/operations"
-                        className="group p-5 border-2 border-gray-200 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 transition-all hover:shadow-md"
+                        className="group p-5 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all hover:shadow-md"
                     >
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 transition-colors">
+                            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center group-hover:bg-emerald-200 dark:group-hover:bg-emerald-800 transition-colors">
                                 <Settings className="w-5 h-5 text-emerald-600" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-medium text-gray-900 group-hover:text-emerald-700">
+                                <p className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-emerald-700 dark:group-hover:text-emerald-400">
                                     Daily Operations
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1">Check-in & Assign</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Check-in & Assign</p>
                             </div>
                         </div>
                     </a>
 
                     <a
                         href="/supervisor/onboarding"
-                        className="group p-5 border-2 border-gray-200 rounded-xl hover:border-blue-500 hover:bg-blue-50 transition-all hover:shadow-md"
+                        className="group p-5 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all hover:shadow-md"
                     >
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center group-hover:bg-blue-200 transition-colors">
+                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-colors">
                                 <UserPlus className="w-5 h-5 text-blue-600" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-medium text-gray-900 group-hover:text-blue-700">
+                                <p className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-blue-700 dark:group-hover:text-blue-400">
                                     Onboard Worker
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1">Register new worker</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Register new worker</p>
                             </div>
                         </div>
                     </a>
 
                     <a
                         href="/supervisor/workers"
-                        className="group p-5 border-2 border-gray-200 rounded-xl hover:border-purple-500 hover:bg-purple-50 transition-all hover:shadow-md"
+                        className="group p-5 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all hover:shadow-md"
                     >
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center group-hover:bg-purple-200 transition-colors">
+                            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center group-hover:bg-purple-200 dark:group-hover:bg-purple-800 transition-colors">
                                 <Users className="w-5 h-5 text-purple-600" />
                             </div>
                             <div className="flex-1">
-                                <p className="font-medium text-gray-900 group-hover:text-purple-700">
+                                <p className="font-medium text-gray-900 dark:text-gray-100 group-hover:text-purple-700 dark:group-hover:text-purple-400">
                                     View Workers
                                 </p>
-                                <p className="text-sm text-gray-500 mt-1">Worker directory</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Worker directory</p>
                             </div>
                         </div>
                     </a>
@@ -312,15 +371,15 @@ export default function SupervisorDashboard() {
                     <button
                         onClick={handleRefresh}
                         disabled={refreshing}
-                        className="group p-5 border-2 border-gray-200 rounded-xl hover:border-gray-400 hover:bg-gray-50 transition-all hover:shadow-md disabled:opacity-50"
+                        className="group p-5 border-2 border-gray-200 dark:border-gray-700 rounded-xl hover:border-gray-400 dark:hover:border-gray-500 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all hover:shadow-md disabled:opacity-50"
                     >
                         <div className="flex items-start gap-3">
-                            <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center group-hover:bg-gray-200 transition-colors">
-                                <RefreshCw className={`w-5 h-5 text-gray-600 ${refreshing ? 'animate-spin' : ''}`} />
+                            <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+                                <RefreshCw className={`w-5 h-5 text-gray-600 dark:text-gray-400 ${refreshing ? 'animate-spin' : ''}`} />
                             </div>
                             <div className="flex-1 text-left">
-                                <p className="font-medium text-gray-900">Refresh Stats</p>
-                                <p className="text-sm text-gray-500 mt-1">Update dashboard</p>
+                                <p className="font-medium text-gray-900 dark:text-gray-100">Refresh Stats</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Update dashboard</p>
                             </div>
                         </div>
                     </button>
@@ -328,31 +387,31 @@ export default function SupervisorDashboard() {
             </div>
 
             {/* Info Card */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-6">
                 <div className="flex items-start gap-4">
                     <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
                         <Info className="w-5 h-5 text-white" />
                     </div>
                     <div className="flex-1">
-                        <h3 className="font-semibold text-blue-900 mb-3 text-lg">
+                        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 text-lg">
                             Daily Workflow Guide
                         </h3>
                         <ol className="space-y-2">
                             <li className="flex items-start gap-3">
                                 <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">1</span>
-                                <span className="text-blue-800 flex-1">Check-in workers as they arrive at the facility</span>
+                                <span className="text-blue-800 dark:text-blue-200 flex-1">Check-in workers as they arrive at the facility</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">2</span>
-                                <span className="text-blue-800 flex-1">Assign checked-in workers to exporters for sorting sessions</span>
+                                <span className="text-blue-800 dark:text-blue-200 flex-1">Assign checked-in workers to exporters for sorting sessions</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">3</span>
-                                <span className="text-blue-800 flex-1">Record completed bags (select 2-4 workers per bag)</span>
+                                <span className="text-blue-800 dark:text-blue-200 flex-1">Record completed bags (select 2-4 workers per bag)</span>
                             </li>
                             <li className="flex items-start gap-3">
                                 <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">4</span>
-                                <span className="text-blue-800 flex-1">Check-out workers when their shift is complete</span>
+                                <span className="text-blue-800 dark:text-blue-200 flex-1">Check-out workers when their shift is complete</span>
                             </li>
                         </ol>
                     </div>

@@ -302,25 +302,36 @@ export default function WorkersPage() {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
-                            <Users className="w-6 h-6 text-white" />
-                        </div>
-                        <h1 className="text-3xl font-bold text-gray-900">Workers Directory</h1>
-                    </div>
-                    <p className="text-gray-600">
-                        Manage and view all registered workers ({workers.length} total)
-                    </p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                <a
-                    href="/supervisor/onboarding"
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 font-medium shadow-lg shadow-emerald-500/30 transition-all"
-                >
-                    <UserPlus className="w-5 h-5" />
-                    Onboard Worker
-                </a>
+                
+                {/* Decorative gradient circles */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+                
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                                <Users className="w-7 h-7 text-white" />
+                            </div>
+                            <h1 className="text-4xl font-bold text-white drop-shadow-lg">Workers Directory</h1>
+                        </div>
+                        <p className="text-white/90 text-lg ml-15">
+                            Manage and view all registered workers ({workers.length} total)
+                        </p>
+                    </div>
+                    <a
+                        href="/supervisor/onboarding"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all shadow-lg"
+                    >
+                        <UserPlus className="w-5 h-5" />
+                        Onboard Worker
+                    </a>
+                </div>
             </div>
 
             {/* Filter Section */}

@@ -182,13 +182,22 @@ export default function OperationsPage() {
             return;
         }
 
-        // Check if worker is already checked in (on-site)
+        // Check if worker is already checked in (on-site) or has checked out today
         const onSiteWorkerIds = attendance
             .filter(a => a.status === 'on-site')
             .map(a => a.workerId._id);
         
+        const checkedOutWorkerIds = attendance
+            .filter(a => a.status === 'checked-out')
+            .map(a => a.workerId._id);
+        
         if (onSiteWorkerIds.includes(worker._id)) {
             toast.error('Worker is already checked in and on-site.');
+            return;
+        }
+        
+        if (checkedOutWorkerIds.includes(worker._id)) {
+            toast.error('Worker has already completed their shift today.');
             return;
         }
 
@@ -311,15 +320,24 @@ export default function OperationsPage() {
             <Toaster position="top-right" />
 
             {/* Header */}
-            <div className="flex items-center justify-between">
-                <div>
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/30">
-                            <Activity className="w-6 h-6 text-white" />
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                {/* Background Pattern */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                </div>
+                
+                {/* Decorative gradient circles */}
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+                
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                            <Activity className="w-7 h-7 text-white" />
                         </div>
-                        <h1 className="text-3xl font-bold text-gray-900">Daily Operations</h1>
+                        <h1 className="text-4xl font-bold text-white drop-shadow-lg">Daily Operations</h1>
                     </div>
-                    <p className="text-gray-600">
+                    <p className="text-white/90 text-lg ml-15">
                         Manage worker check-in, exporter assignments, and bag recording
                     </p>
                 </div>
@@ -492,7 +510,12 @@ export default function OperationsPage() {
                                         </span>
                                     </div>
                                     <span className="text-sm text-gray-500 dark:text-gray-400">
-                                        {workers.length} workers available
+                                        {(() => {
+                                            const onSiteIds = attendance.filter(a => a.status === 'on-site').map(a => a.workerId._id);
+                                            const checkedOutIds = attendance.filter(a => a.status === 'checked-out').map(a => a.workerId._id);
+                                            const available = workers.filter(w => !onSiteIds.includes(w._id) && !checkedOutIds.includes(w._id)).length;
+                                            return available;
+                                        })()} workers available
                                     </span>
                                 </div>
                             </div>
@@ -543,20 +566,32 @@ export default function OperationsPage() {
                                     </thead>
                                     <tbody className="divide-y divide-gray-200">
                                         {(() => {
-                                            // Get list of worker IDs who are currently on-site
+                                            // Get list of worker IDs who are currently on-site OR have already checked out today
                                             const onSiteWorkerIds = attendance
                                                 .filter(a => a.status === 'on-site')
                                                 .map(a => a.workerId._id);
+                                            
+                                            const checkedOutWorkerIds = attendance
+                                                .filter(a => a.status === 'checked-out')
+                                                .map(a => a.workerId._id);
 
                                             console.log('[Check-in List] On-site worker IDs:', onSiteWorkerIds);
+                                            console.log('[Check-in List] Checked-out worker IDs:', checkedOutWorkerIds);
                                             console.log('[Check-in List] All workers:', workers.map(w => ({ id: w._id, name: w.fullName })));
 
-                                            // Filter out workers who are already on-site
+                                            // Filter out workers who are already on-site OR have checked out today
                                             const availableWorkers = workers.filter(w => {
                                                 // Check if worker is already checked in
                                                 const isOnSite = onSiteWorkerIds.includes(w._id);
                                                 if (isOnSite) {
                                                     console.log('[Check-in List] Filtering out on-site worker:', w.fullName);
+                                                    return false;
+                                                }
+                                                
+                                                // Check if worker has already checked out today
+                                                const hasCheckedOut = checkedOutWorkerIds.includes(w._id);
+                                                if (hasCheckedOut) {
+                                                    console.log('[Check-in List] Filtering out checked-out worker:', w.fullName);
                                                     return false;
                                                 }
                                                 
@@ -586,7 +621,7 @@ export default function OperationsPage() {
                                                         <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                                                             {searchWorkerId 
                                                                 ? 'No workers found matching your search.'
-                                                                : 'All workers are already checked in. View them in Active Sessions below.'}
+                                                                : 'All workers have been checked in or checked out for today.'}
                                                         </td>
                                                     </tr>
                                                 );
