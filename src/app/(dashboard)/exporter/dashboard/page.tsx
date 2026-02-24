@@ -78,28 +78,38 @@ export default function ExporterDashboard() {
     return (
         <div className="space-y-6 sm:space-y-8">
             {/* Header */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">Exporter Dashboard</h1>
-                    <p className="mt-2 text-sm sm:text-base text-gray-600 dark:text-gray-400 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {new Date().toLocaleDateString('en-US', { 
-                            weekday: 'long', 
-                            year: 'numeric', 
-                            month: 'long', 
-                            day: 'numeric' 
-                        })}
-                    </p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-600 to-blue-700 dark:from-blue-600 dark:via-indigo-700 dark:to-blue-800 rounded-2xl p-8 shadow-xl shadow-blue-500/30">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                <div className="flex gap-2">
-                    <ExportButton data={getExportData()} label="Export Data" />
-                    <button
-                        onClick={fetchData}
-                        className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900 text-blue-600 dark:text-blue-100 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800 transition-colors"
-                    >
-                        <Clock className="w-4 h-4" />
-                        <span className="text-sm font-medium">Refresh</span>
-                    </button>
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-300/20 rounded-full blur-3xl"></div>
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                                <TrendingUp className="w-7 h-7 text-white" />
+                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Exporter Dashboard</h1>
+                        </div>
+                        <p className="text-white/90 text-base sm:text-lg ml-15">
+                            Coffee export operations &amp; performance overview
+                        </p>
+                        <p className="text-white/70 text-sm mt-1 ml-15 flex items-center gap-2">
+                            <Calendar className="w-4 h-4" />
+                            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                        </p>
+                    </div>
+                    <div className="flex gap-2 flex-wrap">
+                        <ExportButton data={getExportData()} label="Export Data" />
+                        <button
+                            onClick={fetchData}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all shadow-lg"
+                        >
+                            <Clock className="w-4 h-4" />
+                            Refresh
+                        </button>
+                    </div>
                 </div>
             </div>
 
