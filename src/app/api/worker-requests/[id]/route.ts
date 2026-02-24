@@ -7,7 +7,7 @@ import { getCurrentUser } from '@/lib/auth';
 // GET - Single worker request
 export async function GET(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const currentUser = await getCurrentUser();
@@ -17,7 +17,8 @@ export async function GET(
 
         await dbConnect();
 
-        const workerRequest = await WorkerRequestModel.findById(params.id)
+        const { id } = await params;
+        const workerRequest = await WorkerRequestModel.findById(id)
             .populate('exporterId', 'companyTradingName exporterCode phone email contactPerson')
             .populate('reviewedBy', 'name email');
 
@@ -44,7 +45,7 @@ export async function GET(
 // PATCH - Update request status (Admin only) or cancel (Exporter own request)
 export async function PATCH(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const currentUser = await getCurrentUser();
@@ -54,7 +55,8 @@ export async function PATCH(
 
         await dbConnect();
 
-        const workerRequest = await WorkerRequestModel.findById(params.id);
+        const { id } = await params;
+        const workerRequest = await WorkerRequestModel.findById(id);
         if (!workerRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });
         }
@@ -70,7 +72,7 @@ export async function PATCH(
             }
 
             const updated = await WorkerRequestModel.findByIdAndUpdate(
-                params.id,
+                id,
                 {
                     status,
                     adminNotes: adminNotes || workerRequest.adminNotes,
@@ -98,7 +100,7 @@ export async function PATCH(
             }
 
             const updated = await WorkerRequestModel.findByIdAndUpdate(
-                params.id,
+                id,
                 { status: 'rejected' },
                 { new: true }
             ).populate('exporterId', 'companyTradingName exporterCode');
@@ -116,7 +118,7 @@ export async function PATCH(
 // DELETE - Delete a pending request (Exporter only, own request)
 export async function DELETE(
     request: NextRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
 ) {
     try {
         const currentUser = await getCurrentUser();
@@ -126,7 +128,8 @@ export async function DELETE(
 
         await dbConnect();
 
-        const workerRequest = await WorkerRequestModel.findById(params.id);
+        const { id } = await params;
+        const workerRequest = await WorkerRequestModel.findById(id);
         if (!workerRequest) {
             return NextResponse.json({ error: 'Request not found' }, { status: 404 });
         }
@@ -147,7 +150,7 @@ export async function DELETE(
             return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
         }
 
-        await WorkerRequestModel.findByIdAndDelete(params.id);
+        await WorkerRequestModel.findByIdAndDelete(id);
         return NextResponse.json({ message: 'Request deleted successfully' });
     } catch (error) {
         console.error('Delete worker request error:', error);
