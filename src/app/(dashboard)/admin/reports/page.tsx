@@ -490,26 +490,36 @@ export default function AdminReportsPage() {
       
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30 mb-6">
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+          </div>
+          <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Reports & Analytics</h1>
-              <p className="text-sm sm:text-base text-gray-600">Comprehensive operational reports and audit trails</p>
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                  <TrendingUp className="w-7 h-7 text-white" />
+                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Reports &amp; Analytics</h1>
+              </div>
+              <p className="text-white/90 text-base sm:text-lg ml-15">Comprehensive operational reports and audit trails</p>
             </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 shrink-0">
               <button
                 onClick={exportToCSV}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 transition-colors whitespace-nowrap min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-medium transition-colors border border-white/30 backdrop-blur-sm"
               >
                 <FileSpreadsheet className="w-4 h-4" />
-                <span className="text-sm sm:text-base">Export CSV</span>
+                Export CSV
               </button>
               <button
                 onClick={exportToPDF}
-                className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors whitespace-nowrap min-h-[44px]"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-medium transition-colors border border-white/30 backdrop-blur-sm"
               >
                 <FileDown className="w-4 h-4" />
-                <span className="text-sm sm:text-base">Export PDF</span>
+                Export PDF
               </button>
             </div>
           </div>

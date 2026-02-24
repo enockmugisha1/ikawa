@@ -17,7 +17,7 @@ import {
     Search,
     Weight,
     Building2,
-    DollarSign
+    Banknote
 } from 'lucide-react';
 
 interface Worker {
@@ -325,90 +325,88 @@ export default function OperationsPage() {
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                
                 {/* Decorative gradient circles */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                 <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
-                
                 <div className="relative">
                     <div className="flex items-center gap-3 mb-3">
                         <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
                             <Activity className="w-7 h-7 text-white" />
                         </div>
-                        <h1 className="text-4xl font-bold text-white drop-shadow-lg">Daily Operations</h1>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Daily Operations</h1>
                     </div>
-                    <p className="text-white/90 text-lg ml-15">
+                    <p className="text-white/90 text-base sm:text-lg ml-15">
                         Manage worker check-in, exporter assignments, and bag recording
                     </p>
                 </div>
             </div>
 
             {/* Operations Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-purple-100 rounded-xl flex items-center justify-center">
-                            <Package className="w-6 h-6 text-purple-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Package className="w-4 h-4 text-gray-600" />
                         </div>
-                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <TrendingUp className="w-4 h-4 text-gray-400" />
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Bags Assigned Today</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Bags Today</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {operationsMetrics?.bagsToday || 0}
                     </p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-orange-100 rounded-xl flex items-center justify-center">
-                            <Weight className="w-6 h-6 text-orange-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Weight className="w-4 h-4 text-gray-600" />
                         </div>
-                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <TrendingUp className="w-4 h-4 text-gray-400" />
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Total Kilograms</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Total KG</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {operationsMetrics?.totalKilogramsToday?.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">kg today</p>
+                    <p className="text-xs text-gray-400 mt-1">kg today</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-teal-100 rounded-xl flex items-center justify-center">
-                            <Users className="w-6 h-6 text-teal-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Users className="w-4 h-4 text-gray-600" />
                         </div>
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Avg Workers/Bag</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Avg Workers/Bag</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {operationsMetrics?.avgWorkersPerBag?.toFixed(1) || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">workers per bag</p>
+                    <p className="text-xs text-gray-400 mt-1">per bag</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-indigo-100 rounded-xl flex items-center justify-center">
-                            <Clock className="w-6 h-6 text-indigo-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Clock className="w-4 h-4 text-gray-600" />
                         </div>
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Total Hours Today</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Hours Today</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {operationsMetrics?.totalHoursToday?.toFixed(1) || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">hours worked</p>
+                    <p className="text-xs text-gray-400 mt-1">hours worked</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl shadow-sm border border-pink-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 col-span-2 sm:col-span-1">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-pink-500 rounded-xl flex items-center justify-center">
-                            <Building2 className="w-6 h-6 text-white" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Building2 className="w-4 h-4 text-gray-600" />
                         </div>
                     </div>
-                    <p className="text-sm text-pink-900 font-medium">Exporters Served</p>
-                    <p className="text-3xl font-bold text-pink-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Exporters Served</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {operationsMetrics?.exportersServedToday || 0}
                     </p>
-                    <p className="text-xs text-pink-700 mt-1">Active today</p>
+                    <p className="text-xs text-gray-400 mt-1">Active today</p>
                 </div>
             </div>
 
@@ -422,8 +420,8 @@ export default function OperationsPage() {
                                 {onSiteWorkers.length}
                             </p>
                         </div>
-                        <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center">
-                            <Users className="w-6 h-6 text-emerald-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Users className="w-5 h-5 text-gray-600" />
                         </div>
                     </div>
                 </div>
@@ -436,8 +434,8 @@ export default function OperationsPage() {
                                 {sessions.length}
                             </p>
                         </div>
-                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <Activity className="w-6 h-6 text-blue-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Activity className="w-5 h-5 text-gray-600" />
                         </div>
                     </div>
                 </div>
@@ -450,8 +448,8 @@ export default function OperationsPage() {
                                 {attendance.length}
                             </p>
                         </div>
-                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                            <TrendingUp className="w-6 h-6 text-purple-600" />
+                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <TrendingUp className="w-5 h-5 text-gray-600" />
                         </div>
                     </div>
                 </div>
@@ -475,7 +473,7 @@ export default function OperationsPage() {
                                     className={`
                                         flex items-center gap-2 px-6 py-4 text-sm font-medium border-b-2 transition-all
                                         ${activeTab === tab.id
-                                            ? 'border-emerald-500 text-emerald-600 bg-emerald-50'
+                                            ? 'border-gray-700 text-gray-900 bg-gray-50'
                                             : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }
                                     `}
@@ -495,7 +493,7 @@ export default function OperationsPage() {
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
                                 <div>
                                     <h3 className="text-lg font-semibold flex items-center gap-2">
-                                        <UserCheck className="w-5 h-5 text-emerald-600" />
+                                        <UserCheck className="w-5 h-5 text-gray-600" />
                                         Worker Entry Check-in
                                     </h3>
                                     <p className="text-sm text-gray-600 mt-1">
@@ -504,12 +502,12 @@ export default function OperationsPage() {
                                 </div>
                                 <div className="flex items-center gap-3">
                                     <div className="flex items-center gap-2 text-sm">
-                                        <Clock className="w-4 h-4 text-gray-400 dark:text-gray-500" />
-                                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                                        <Clock className="w-4 h-4 text-gray-400" />
+                                        <span className="font-medium text-gray-700">
                                             {currentTime || '--:--:--'}
                                         </span>
                                     </div>
-                                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                                    <span className="text-sm text-gray-500">
                                         {(() => {
                                             const onSiteIds = attendance.filter(a => a.status === 'on-site').map(a => a.workerId._id);
                                             const checkedOutIds = attendance.filter(a => a.status === 'checked-out').map(a => a.workerId._id);
@@ -521,9 +519,9 @@ export default function OperationsPage() {
                             </div>
 
                             {/* Quick Search by Worker ID */}
-                            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
-                                    <Search className="w-4 h-4 text-blue-600" />
+                                    <Search className="w-4 h-4 text-gray-700" />
                                     Quick Check-in: Enter Worker ID or Phone
                                 </label>
                                 <div className="flex gap-3">
@@ -533,12 +531,12 @@ export default function OperationsPage() {
                                         onChange={(e) => setSearchWorkerId(e.target.value)}
                                         onKeyPress={(e) => e.key === 'Enter' && handleQuickCheckIn()}
                                         placeholder="WORK001, 0788123456, or worker name..."
-                                        className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white font-medium"
+                                        className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-medium"
                                     />
                                     <button
                                         onClick={handleQuickCheckIn}
                                         disabled={loading || !searchWorkerId}
-                                        className="px-6 py-2.5 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-medium disabled:opacity-50 transition-colors inline-flex items-center gap-2"
+                                        className="px-6 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium disabled:opacity-50 transition-colors inline-flex items-center gap-2"
                                     >
                                         <CheckCircle2 className="w-4 h-4" />
                                         Check In
@@ -631,14 +629,14 @@ export default function OperationsPage() {
                                                 <tr key={worker._id} className="hover:bg-gray-50">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                                                                 {worker.fullName.charAt(0).toUpperCase()}
                                                             </div>
                                                             <span className="font-medium text-gray-900">{worker.fullName}</span>
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className="text-sm font-mono font-semibold text-blue-600">{worker.workerId}</span>
+                                                        <span className="text-sm font-mono font-semibold text-gray-700">{worker.workerId}</span>
                                                     </td>
                                                     <td className="px-6 py-4 text-sm text-gray-600">{worker.phone}</td>
                                                     <td className="px-6 py-4">
@@ -650,7 +648,7 @@ export default function OperationsPage() {
                                                         <button
                                                             onClick={() => handleCheckIn(worker._id)}
                                                             disabled={loading}
-                                                            className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 font-medium disabled:opacity-50 transition-colors"
+                                                            className="inline-flex items-center gap-2 px-4 py-2 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium disabled:opacity-50 transition-colors"
                                                         >
                                                             <CheckCircle2 className="w-4 h-4" />
                                                             Check In
@@ -671,7 +669,7 @@ export default function OperationsPage() {
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6">
                                 <div>
                                     <h3 className="text-lg font-semibold flex items-center gap-2">
-                                        <Link2 className="w-5 h-5 text-blue-600" />
+                                        <Link2 className="w-5 h-5 text-gray-700" />
                                         Assign Workers to Exporters
                                     </h3>
                                     <p className="text-sm text-gray-600 mt-1">
@@ -680,11 +678,11 @@ export default function OperationsPage() {
                                 </div>
                                 <div className="flex items-center gap-4 text-sm">
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                                        <div className="w-3 h-3 rounded-full bg-gray-800"></div>
                                         <span className="text-gray-700">{onSiteWorkers.filter(w => !sessions.some(s => s.workerId._id === w.workerId._id)).length} Available</span>
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                                        <div className="w-3 h-3 rounded-full bg-gray-400"></div>
                                         <span className="text-gray-700">{sessions.length} Assigned</span>
                                     </div>
                                 </div>
@@ -715,14 +713,14 @@ export default function OperationsPage() {
                                                     <tr key={att._id} className="hover:bg-gray-50">
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                                                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                                                                     {att.workerId.fullName.charAt(0).toUpperCase()}
                                                                 </div>
                                                                 <span className="font-medium text-gray-900">{att.workerId.fullName}</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            <span className="text-sm font-mono font-semibold text-blue-600">{att.workerId.workerId}</span>
+                                                            <span className="text-sm font-mono font-semibold text-gray-700">{att.workerId.workerId}</span>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -735,12 +733,12 @@ export default function OperationsPage() {
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             {hasActiveSession ? (
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                                    <div className="w-2 h-2 bg-blue-500 rounded-full mr-1.5 animate-pulse"></div>
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
+                                                                    <div className="w-2 h-2 bg-gray-400 rounded-full mr-1.5 animate-pulse"></div>
                                                                     Assigned - Active Session
                                                                 </span>
                                                             ) : (
-                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
+                                                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-700">
                                                                     On-site - Available
                                                                 </span>
                                                             )}
@@ -761,7 +759,7 @@ export default function OperationsPage() {
                                                                     onChange={(e) =>
                                                                         e.target.value && handleAssignExporter(att._id, e.target.value)
                                                                     }
-                                                                    className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                                                                    className="w-full max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                                                                     disabled={loading}
                                                                 >
                                                                     <option value="">Select Exporter</option>
@@ -789,7 +787,7 @@ export default function OperationsPage() {
                             <div className="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 className="text-lg font-semibold flex items-center gap-2">
-                                        <Package className="w-5 h-5 text-purple-600" />
+                                        <Package className="w-5 h-5 text-gray-700" />
                                         Record Completed Bag (60kg)
                                     </h3>
                                     <p className="text-sm text-gray-600 mt-1">
@@ -797,13 +795,13 @@ export default function OperationsPage() {
                                     </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-2xl font-bold text-purple-600">60kg</p>
+                                    <p className="text-2xl font-bold text-gray-700">60kg</p>
                                     <p className="text-xs text-gray-500">Standard weight</p>
                                 </div>
                             </div>
 
                             {/* Exporter Filter */}
-                            <div className="mb-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                     <Link2 className="w-4 h-4" />
                                     Filter by Exporter *
@@ -811,7 +809,7 @@ export default function OperationsPage() {
                                 <select
                                     value={bagFormData.exporterId}
                                     onChange={(e) => setBagFormData({ ...bagFormData, exporterId: e.target.value, workers: [] })}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white font-medium"
+                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-medium"
                                 >
                                     <option value="">-- Select Exporter Company --</option>
                                     {exporters.map((exp) => (
@@ -821,7 +819,7 @@ export default function OperationsPage() {
                                     ))}
                                 </select>
                                 {bagFormData.exporterId && (
-                                    <p className="mt-2 text-sm text-blue-700">
+                                    <p className="mt-2 text-sm text-gray-600">
                                         ✓ Showing workers assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}
                                     </p>
                                 )}
@@ -835,7 +833,7 @@ export default function OperationsPage() {
                                             <h4 className="font-medium text-gray-900">Select Workers (2-4 required)</h4>
                                             <span className={`text-sm font-medium ${
                                                 bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                    ? 'text-emerald-600' 
+                                                    ? 'text-gray-600' 
                                                     : 'text-gray-500'
                                             }`}>
                                                 {bagFormData.workers.length} / 4 selected
@@ -850,7 +848,7 @@ export default function OperationsPage() {
                                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                                                         <input
                                                             type="checkbox"
-                                                            className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500"
+                                                            className="w-4 h-4 text-gray-600 rounded focus:ring-gray-400"
                                                             checked={false}
                                                             disabled
                                                         />
@@ -872,7 +870,7 @@ export default function OperationsPage() {
                                                             <tr 
                                                                 key={session._id} 
                                                                 className={`hover:bg-gray-50 transition-colors ${
-                                                                    isSelected ? 'bg-emerald-50' : ''
+                                                                    isSelected ? 'bg-gray-50' : ''
                                                                 }`}
                                                             >
                                                                 <td className="px-6 py-4">
@@ -881,14 +879,14 @@ export default function OperationsPage() {
                                                                         checked={isSelected}
                                                                         onChange={() => handleWorkerToggle(workerId)}
                                                                         disabled={!canSelect}
-                                                                        className="w-4 h-4 text-emerald-600 rounded focus:ring-emerald-500 disabled:opacity-30 cursor-pointer"
+                                                                        className="w-4 h-4 text-gray-600 rounded focus:ring-gray-400 disabled:opacity-30 cursor-pointer"
                                                                     />
                                                                 </td>
                                                                 <td className="px-6 py-4">
                                                                     <div className="flex items-center gap-3">
                                                                         <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
                                                                             isSelected 
-                                                                                ? 'bg-gradient-to-br from-emerald-500 to-teal-600' 
+                                                                                ? 'bg-gray-200' 
                                                                                 : 'bg-gradient-to-br from-gray-400 to-gray-500'
                                                                         }`}>
                                                                             {session.workerId.fullName.charAt(0).toUpperCase()}
@@ -901,8 +899,8 @@ export default function OperationsPage() {
                                                                 </td>
                                                                 <td className="px-6 py-4">
                                                                     <div className="flex items-center gap-2">
-                                                                        <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                                                                            <Link2 className="w-4 h-4 text-blue-600" />
+                                                                        <div className="w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                                            <Link2 className="w-4 h-4 text-gray-700" />
                                                                         </div>
                                                                         <span className="text-sm font-medium text-gray-900">
                                                                             {session.exporterId.companyTradingName}
@@ -938,12 +936,12 @@ export default function OperationsPage() {
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <CheckCircle2 className={`w-4 h-4 ${
                                                         bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                            ? 'text-emerald-600' 
+                                                            ? 'text-gray-600' 
                                                             : 'text-gray-300'
                                                     }`} />
                                                     <span className={
                                                         bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                            ? 'text-emerald-600 font-medium' 
+                                                            ? 'text-gray-600 font-medium' 
                                                             : 'text-gray-500'
                                                     }>
                                                         {bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
@@ -960,7 +958,7 @@ export default function OperationsPage() {
                                             <button
                                                 onClick={handleRecordBag}
                                                 disabled={loading || bagFormData.workers.length < 2 || bagFormData.workers.length > 4}
-                                                className="px-8 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-lg hover:from-emerald-600 hover:to-teal-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-emerald-500/30 flex items-center gap-2"
+                                                className="px-8 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg  flex items-center gap-2"
                                             >
                                                 {loading ? (
                                                     <>
@@ -1050,14 +1048,14 @@ export default function OperationsPage() {
                                                     <tr key={att._id} className="hover:bg-gray-50">
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className="w-8 h-8 bg-gradient-to-br from-red-500 to-pink-600 rounded-full flex items-center justify-center text-white text-sm font-semibold">
+                                                                <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-white text-sm font-semibold">
                                                                     {att.workerId.fullName.charAt(0).toUpperCase()}
                                                                 </div>
                                                                 <span className="font-medium text-gray-900">{att.workerId.fullName}</span>
                                                             </div>
                                                         </td>
                                                         <td className="px-6 py-4">
-                                                            <span className="text-sm font-mono font-semibold text-blue-600">{att.workerId.workerId}</span>
+                                                            <span className="text-sm font-mono font-semibold text-gray-700">{att.workerId.workerId}</span>
                                                         </td>
                                                         <td className="px-6 py-4">
                                                             <div className="flex items-center gap-2 text-sm text-gray-600">
@@ -1111,14 +1109,14 @@ export default function OperationsPage() {
                         className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                     >
                         <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg flex items-center justify-center">
                                 <Activity className="w-5 h-5 text-white" />
                             </div>
                             <div className="text-left">
                                 <h3 className="text-base font-semibold text-gray-900 flex items-center gap-2">
                                     Active Work Sessions
-                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-medium rounded-full">
-                                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-pulse" />
+                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                                        <div className="w-1.5 h-1.5 bg-gray-500 rounded-full animate-pulse" />
                                         {sessions.length}
                                     </span>
                                 </h3>
@@ -1155,10 +1153,10 @@ export default function OperationsPage() {
                                             const duration = Math.floor((Date.now() - startTime.getTime()) / 1000 / 60); // minutes
                                             
                                             return (
-                                                <tr key={session._id} className="hover:bg-blue-50 transition-colors">
+                                                <tr key={session._id} className="hover:bg-gray-50 transition-colors">
                                                     <td className="px-6 py-3">
                                                         <div className="flex items-center gap-3">
-                                                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-white text-xs font-semibold">
+                                                            <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center text-white text-xs font-semibold">
                                                                 {session.workerId.fullName.charAt(0).toUpperCase()}
                                                             </div>
                                                             <div>
@@ -1169,8 +1167,8 @@ export default function OperationsPage() {
                                                     </td>
                                                     <td className="px-6 py-3">
                                                         <div className="flex items-center gap-2">
-                                                            <div className="w-6 h-6 bg-blue-100 rounded flex items-center justify-center">
-                                                                <Link2 className="w-3.5 h-3.5 text-blue-600" />
+                                                            <div className="w-6 h-6 bg-gray-100 rounded flex items-center justify-center">
+                                                                <Link2 className="w-3.5 h-3.5 text-gray-700" />
                                                             </div>
                                                             <span className="text-sm font-medium text-gray-900">{session.exporterId.companyTradingName}</span>
                                                         </div>

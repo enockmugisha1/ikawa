@@ -4,7 +4,7 @@ import ExporterModel from '@/models/Exporter';
 import { getCurrentUser } from '@/lib/auth';
 
 // GET - List all exporters
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
         const currentUser = await getCurrentUser();
         if (!currentUser) {
@@ -17,6 +17,13 @@ export async function GET() {
         let query: any = { isActive: true };
         if (currentUser.role === 'exporter' && currentUser.exporterId) {
             query._id = currentUser.exporterId;
+        }
+        // Admin with ?all=true sees all exporters including inactive
+        if (currentUser.role === 'admin') {
+            const { searchParams } = new URL(request.url);
+            if (searchParams.get('all') === 'true') {
+                query = {};
+            }
         }
 
         const exporters = await ExporterModel.find(query).sort({ companyTradingName: 1 });

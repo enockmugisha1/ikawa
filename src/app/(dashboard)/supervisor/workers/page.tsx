@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, Phone, Calendar, User, Filter, X, ChevronDown, Search, Clock, Package, DollarSign, Award, TrendingUp, Eye } from 'lucide-react';
+import { UserPlus, Users, Phone, Calendar, User, Filter, X, ChevronDown, Search, Clock, Package, Banknote, Award, TrendingUp, Eye, BarChart2 } from 'lucide-react';
 import DataTable, { Column } from '@/components/DataTable';
+
+const SESSION_RATE = 2000;
 
 interface Worker {
     _id: string;
@@ -12,8 +14,7 @@ interface Worker {
     gender: string;
     status: string;
     enrollmentDate: string;
-    earnings?: number;
-    hourlyRate?: number;
+    weekSessions?: number;
 }
 
 interface WorkerStats {
@@ -47,6 +48,7 @@ export default function WorkersPage() {
     const [workers, setWorkers] = useState<Worker[]>([]);
     const [loading, setLoading] = useState(true);
     const [showFilters, setShowFilters] = useState(false);
+    const [showTable, setShowTable] = useState(true);
     const [workerStats, setWorkerStats] = useState<WorkerStats | null>(null);
     const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
     const [workerDetails, setWorkerDetails] = useState<WorkerDetails | null>(null);
@@ -98,23 +100,6 @@ export default function WorkersPage() {
             setWorkerStats(data.stats);
         } catch (error) {
             console.error('Error fetching worker stats:', error);
-        }
-    };
-
-    const handleUpdateHourlyRate = async (workerId: string, hourlyRate: number) => {
-        try {
-            const res = await fetch(`/api/workers/${workerId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ hourlyRate }),
-            });
-
-            if (!res.ok) throw new Error('Update failed');
-            
-            // Refresh workers list
-            fetchWorkers();
-        } catch (error) {
-            console.error('Error updating hourly rate:', error);
         }
     };
 
@@ -186,12 +171,12 @@ export default function WorkersPage() {
             sortable: true,
             render: (worker) => (
                 <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-semibold text-sm">
                         {worker.fullName.charAt(0).toUpperCase()}
                     </div>
                     <div>
                         <div className="font-medium text-gray-900">{worker.fullName}</div>
-                        <div className="text-xs text-gray-500">{worker.workerId}</div>
+                        <div className="text-xs text-gray-400">{worker.workerId}</div>
                     </div>
                 </div>
             )
@@ -201,7 +186,7 @@ export default function WorkersPage() {
             label: 'Phone',
             sortable: true,
             render: (worker) => (
-                <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-center gap-2 text-gray-600">
                     <Phone className="w-4 h-4 text-gray-400" />
                     {worker.phone}
                 </div>
@@ -212,7 +197,7 @@ export default function WorkersPage() {
             label: 'Gender',
             sortable: true,
             render: (worker) => (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-gray-600">
                     <User className="w-4 h-4 text-gray-400" />
                     <span className="capitalize">{worker.gender}</span>
                 </div>
@@ -225,55 +210,52 @@ export default function WorkersPage() {
             render: (worker) => (
                 <span className={`
                     inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                    ${worker.status === 'active' 
-                        ? 'bg-emerald-100 text-emerald-800' 
-                        : 'bg-gray-100 text-gray-800'
+                    ${worker.status === 'active'
+                        ? 'bg-gray-100 text-gray-700 ring-1 ring-gray-300'
+                        : 'bg-gray-50 text-gray-400'
                     }
                 `}>
                     {worker.status === 'active' && (
-                        <span className="w-1.5 h-1.5 bg-emerald-600 rounded-full mr-1.5" />
+                        <span className="w-1.5 h-1.5 bg-gray-500 rounded-full mr-1.5" />
                     )}
                     {worker.status}
                 </span>
             )
         },
         {
-            key: 'earnings',
-            label: 'Total Earnings',
+            key: 'weekSessions',
+            label: 'Sessions This Week',
             sortable: true,
             render: (worker) => (
-                <div className="flex items-center gap-2 text-gray-700">
-                    <DollarSign className="w-4 h-4 text-emerald-600" />
-                    <span className="font-semibold text-emerald-900">
-                        FRw {worker.earnings?.toLocaleString() || 0}
-                    </span>
+                <div className="flex items-center gap-2 text-gray-600">
+                    <BarChart2 className="w-4 h-4 text-gray-400" />
+                    <span className="font-medium">{worker.weekSessions ?? 0}</span>
+                    <span className="text-xs text-gray-400">session{(worker.weekSessions ?? 0) !== 1 ? 's' : ''}</span>
                 </div>
             )
         },
         {
-            key: 'hourlyRate',
-            label: 'Hourly Rate',
+            key: 'earnings',
+            label: 'Total Earnings (RWF)',
             sortable: true,
-            render: (worker) => (
-                <div className="flex items-center gap-2">
-                    <input
-                        type="number"
-                        value={worker.hourlyRate || 50}
-                        onChange={(e) => handleUpdateHourlyRate(worker._id, parseFloat(e.target.value))}
-                        className="w-24 px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
-                        min="0"
-                        step="10"
-                    />
-                    <span className="text-xs text-gray-500">FRw/hr</span>
-                </div>
-            )
+            render: (worker) => {
+                const earnings = (worker.weekSessions ?? 0) * SESSION_RATE;
+                return (
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <Banknote className="w-4 h-4 text-gray-400" />
+                        <span className="font-semibold text-gray-700">
+                            {earnings.toLocaleString()}
+                        </span>
+                    </div>
+                );
+            }
         },
         {
             key: 'enrollmentDate',
             label: 'Enrolled Date',
             sortable: true,
             render: (worker) => (
-                <div className="flex items-center gap-2 text-gray-700">
+                <div className="flex items-center gap-2 text-gray-600">
                     <Calendar className="w-4 h-4 text-gray-400" />
                     {new Date(worker.enrollmentDate).toLocaleDateString('en-US', {
                         year: 'numeric',
@@ -290,7 +272,7 @@ export default function WorkersPage() {
             render: (worker) => (
                 <button
                     onClick={() => fetchWorkerDetails(worker._id)}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg text-sm font-medium transition-colors"
+                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200"
                 >
                     <Eye className="w-4 h-4" />
                     View Details
@@ -307,28 +289,26 @@ export default function WorkersPage() {
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                
                 {/* Decorative gradient circles */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
                 <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
-                
                 <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-3 mb-3">
                             <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
                                 <Users className="w-7 h-7 text-white" />
                             </div>
-                            <h1 className="text-4xl font-bold text-white drop-shadow-lg">Workers Directory</h1>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Workers Directory</h1>
                         </div>
-                        <p className="text-white/90 text-lg ml-15">
+                        <p className="text-white/90 text-base sm:text-lg ml-15">
                             Manage and view all registered workers ({workers.length} total)
                         </p>
                     </div>
                     <a
                         href="/supervisor/onboarding"
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all shadow-lg"
+                        className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-medium transition-colors w-full sm:w-auto border border-white/30 backdrop-blur-sm shadow-sm shrink-0"
                     >
-                        <UserPlus className="w-5 h-5" />
+                        <UserPlus className="w-4 h-4" />
                         Onboard Worker
                     </a>
                 </div>
@@ -339,13 +319,13 @@ export default function WorkersPage() {
                 {/* Filter Toggle Button */}
                 <button
                     onClick={() => setShowFilters(!showFilters)}
-                    className="w-full px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                    className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
                 >
                     <div className="flex items-center gap-3">
                         <Filter className="w-5 h-5 text-gray-600" />
                         <span className="font-medium text-gray-900">Filters</span>
                         {hasActiveFilters() && (
-                            <span className="px-2 py-0.5 bg-emerald-100 text-emerald-700 text-xs font-medium rounded-full">
+                            <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                                 Active
                             </span>
                         )}
@@ -357,34 +337,32 @@ export default function WorkersPage() {
 
                 {/* Filter Controls */}
                 {showFilters && (
-                    <div className="px-6 pb-6 border-t border-gray-200">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+                    <div className="px-4 sm:px-6 pb-6 border-t border-gray-200">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mt-4">
                             {/* Search */}
-                            <div className="lg:col-span-3">
+                            <div className="sm:col-span-2 lg:col-span-3">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
                                     Search
                                 </label>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                                     <input
                                         type="text"
                                         placeholder="Search by name or worker ID..."
                                         value={filters.search}
                                         onChange={(e) => handleFilterChange('search', e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                                        className="w-full pl-9 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors text-sm"
                                     />
                                 </div>
                             </div>
 
                             {/* Status Filter */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Status
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                                 <select
                                     value={filters.status}
                                     onChange={(e) => handleFilterChange('status', e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-sm"
                                 >
                                     <option value="all">All Status</option>
                                     <option value="active">Active</option>
@@ -394,13 +372,11 @@ export default function WorkersPage() {
 
                             {/* Gender Filter */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Gender
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
                                 <select
                                     value={filters.gender}
                                     onChange={(e) => handleFilterChange('gender', e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-sm"
                                 >
                                     <option value="all">All Genders</option>
                                     <option value="male">Male</option>
@@ -411,13 +387,11 @@ export default function WorkersPage() {
 
                             {/* Week Filter */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Week
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Week</label>
                                 <select
                                     value={filters.week}
                                     onChange={(e) => handleFilterChange('week', e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors bg-white text-sm"
                                 >
                                     <option value="">All Weeks</option>
                                     {getWeekOptions().map(week => (
@@ -430,27 +404,23 @@ export default function WorkersPage() {
 
                             {/* Date From */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Date From
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Date From</label>
                                 <input
                                     type="date"
                                     value={filters.dateFrom}
                                     onChange={(e) => handleFilterChange('dateFrom', e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors text-sm"
                                 />
                             </div>
 
                             {/* Date To */}
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    Date To
-                                </label>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">Date To</label>
                                 <input
                                     type="date"
                                     value={filters.dateTo}
                                     onChange={(e) => handleFilterChange('dateTo', e.target.value)}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors"
+                                    className="w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-gray-400 transition-colors text-sm"
                                 />
                             </div>
                         </div>
@@ -472,93 +442,120 @@ export default function WorkersPage() {
             </div>
 
             {/* Stats Cards - Worker Metrics */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
-                            <Users className="w-6 h-6 text-emerald-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Users className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                         </div>
-                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <TrendingUp className="w-4 h-4 text-gray-400" />
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Active Workers</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Active Workers</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {workerStats?.totalActiveWorkers || workers.filter(w => w.status === 'active').length}
                     </p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-gray-100 rounded-xl flex items-center justify-center">
-                            <User className="w-6 h-6 text-gray-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <User className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Inactive Workers</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Inactive</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {workerStats?.totalInactiveWorkers || workers.filter(w => w.status !== 'active').length}
                     </p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-emerald-100 rounded-xl flex items-center justify-center">
-                            <DollarSign className="w-6 h-6 text-emerald-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Banknote className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                         </div>
-                        <TrendingUp className="w-4 h-4 text-emerald-500" />
+                        <TrendingUp className="w-4 h-4 text-gray-400" />
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Total Labor Costs</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
-                        FRw {workerStats?.totalLaborCosts?.toLocaleString() || 0}
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Labor Costs (RWF)</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
+                        {workerStats?.totalLaborCosts?.toLocaleString() || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">All time</p>
+                    <p className="text-xs text-gray-400 mt-1">All time</p>
                 </div>
 
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-blue-100 rounded-xl flex items-center justify-center">
-                            <Clock className="w-6 h-6 text-blue-600" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                         </div>
                     </div>
-                    <p className="text-sm text-gray-600 font-medium">Avg Hours/Worker</p>
-                    <p className="text-3xl font-bold text-gray-900 mt-1">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Avg Hrs / Worker</p>
+                    <p className="text-xl sm:text-2xl font-bold text-gray-900 mt-1">
                         {workerStats?.avgHoursPerWorker?.toFixed(1) || 0}
                     </p>
-                    <p className="text-xs text-gray-500 mt-1">Per worker</p>
+                    <p className="text-xs text-gray-400 mt-1">Per worker</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl shadow-sm border border-amber-200 p-5 hover:shadow-md transition-shadow">
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 col-span-2 sm:col-span-1">
                     <div className="flex items-center justify-between mb-3">
-                        <div className="w-11 h-11 bg-amber-500 rounded-xl flex items-center justify-center">
-                            <Award className="w-6 h-6 text-white" />
+                        <div className="w-9 h-9 bg-gray-100 rounded-xl flex items-center justify-center">
+                            <Award className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
                         </div>
                     </div>
-                    <p className="text-sm text-amber-900 font-medium">Top Performer</p>
-                    <p className="text-2xl font-bold text-amber-900 mt-1 truncate">
+                    <p className="text-xs text-gray-500 font-medium uppercase tracking-wide">Top Performer</p>
+                    <p className="text-base sm:text-xl font-bold text-gray-900 mt-1 truncate">
                         {workerStats?.topPerformer?.name || 'N/A'}
                     </p>
-                    <p className="text-xs text-amber-700 mt-1">
+                    <p className="text-xs text-gray-400 mt-1">
                         {workerStats?.topPerformer?.bagsProcessed || 0} bags
                     </p>
                 </div>
             </div>
 
-            {/* Workers Table */}
-            <DataTable
-                data={workers}
-                columns={columns}
-                keyExtractor={(worker) => worker._id}
-                searchable={true}
-                searchKeys={['fullName', 'workerId', 'phone']}
-                pageSize={25}
-                loading={loading}
-                emptyMessage="No workers found. Click 'Onboard Worker' to register your first worker."
-            />
+            {/* Workers Table - collapsible */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Table toggle header */}
+                <button
+                    onClick={() => setShowTable(!showTable)}
+                    className="w-full px-4 sm:px-6 py-4 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                >
+                    <div className="flex items-center gap-3">
+                        <Users className="w-5 h-5 text-gray-600" />
+                        <span className="font-medium text-gray-900">Workers Table</span>
+                        <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                            {workers.length}
+                        </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <span className="hidden sm:inline">{showTable ? 'Hide' : 'Show'}</span>
+                        <ChevronDown
+                            className={`w-5 h-5 text-gray-400 transition-transform duration-200 ${showTable ? 'rotate-180' : ''}`}
+                        />
+                    </div>
+                </button>
+
+                {/* Table content */}
+                {showTable && (
+                    <div className="border-t border-gray-200 overflow-x-auto">
+                        <DataTable
+                            data={workers}
+                            columns={columns}
+                            keyExtractor={(worker) => worker._id}
+                            searchable={true}
+                            searchKeys={['fullName', 'workerId', 'phone']}
+                            pageSize={25}
+                            loading={loading}
+                            emptyMessage="No workers found. Click 'Onboard Worker' to register your first worker."
+                        />
+                    </div>
+                )}
+            </div>
 
             {/* Worker Details Modal */}
             {selectedWorker && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedWorker(null)}>
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6" onClick={(e) => e.stopPropagation()}>
-                        <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Worker Details</h2>
+                <div className="fixed inset-0 bg-gray-600/40 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4" onClick={() => setSelectedWorker(null)}>
+                    <div className="bg-white rounded-t-2xl sm:rounded-xl shadow-2xl w-full sm:max-w-2xl p-5 sm:p-6 max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-between mb-5">
+                            <h2 className="text-lg sm:text-2xl font-bold text-gray-900">Worker Details</h2>
                             <button
                                 onClick={() => setSelectedWorker(null)}
                                 className="w-8 h-8 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center justify-center transition-colors"
@@ -569,52 +566,52 @@ export default function WorkersPage() {
 
                         {loadingDetails ? (
                             <div className="flex items-center justify-center py-12">
-                                <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin" />
+                                <div className="w-10 h-10 border-4 border-gray-300 border-t-gray-600 rounded-full animate-spin" />
                             </div>
                         ) : workerDetails ? (
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-5 border border-blue-200">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                                <div className="bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                                            <Clock className="w-5 h-5 text-white" />
+                                        <div className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center shrink-0">
+                                            <Clock className="w-5 h-5 text-gray-600" />
                                         </div>
-                                        <p className="text-sm font-medium text-blue-900">Total Hours Worked</p>
+                                        <p className="text-sm font-medium text-gray-700">Total Hours Worked</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-blue-900">{workerDetails.totalHours.toFixed(1)}</p>
-                                    <p className="text-sm text-blue-700 mt-1">Hours</p>
+                                    <p className="text-3xl font-bold text-gray-900">{workerDetails.totalHours.toFixed(1)}</p>
+                                    <p className="text-sm text-gray-500 mt-1">Hours</p>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl p-5 border border-purple-200">
+                                <div className="bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                                            <Package className="w-5 h-5 text-white" />
+                                        <div className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center shrink-0">
+                                            <Package className="w-5 h-5 text-gray-600" />
                                         </div>
-                                        <p className="text-sm font-medium text-purple-900">Total Bags Processed</p>
+                                        <p className="text-sm font-medium text-gray-700">Total Bags Processed</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-purple-900">{workerDetails.totalBags}</p>
-                                    <p className="text-sm text-purple-700 mt-1">Bags</p>
+                                    <p className="text-3xl font-bold text-gray-900">{workerDetails.totalBags}</p>
+                                    <p className="text-sm text-gray-500 mt-1">Bags</p>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl p-5 border border-emerald-200">
+                                <div className="bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center">
-                                            <DollarSign className="w-5 h-5 text-white" />
+                                        <div className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center shrink-0">
+                                            <Banknote className="w-5 h-5 text-gray-600" />
                                         </div>
-                                        <p className="text-sm font-medium text-emerald-900">Earnings to Date</p>
+                                        <p className="text-sm font-medium text-gray-700">Earnings to Date (RWF)</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-emerald-900">FRw {workerDetails.earnings.toLocaleString()}</p>
-                                    <p className="text-sm text-emerald-700 mt-1">Total Earned</p>
+                                    <p className="text-3xl font-bold text-gray-900">{workerDetails.earnings.toLocaleString()}</p>
+                                    <p className="text-sm text-gray-500 mt-1">Total Earned</p>
                                 </div>
 
-                                <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border border-amber-200">
+                                <div className="bg-gray-50 rounded-xl p-4 sm:p-5 border border-gray-200">
                                     <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center">
-                                            <Calendar className="w-5 h-5 text-white" />
+                                        <div className="w-9 h-9 bg-gray-200 rounded-lg flex items-center justify-center shrink-0">
+                                            <Calendar className="w-5 h-5 text-gray-600" />
                                         </div>
-                                        <p className="text-sm font-medium text-amber-900">Days Worked This Month</p>
+                                        <p className="text-sm font-medium text-gray-700">Days Worked This Month</p>
                                     </div>
-                                    <p className="text-3xl font-bold text-amber-900">{workerDetails.daysWorkedThisMonth}</p>
-                                    <p className="text-sm text-amber-700 mt-1">Days</p>
+                                    <p className="text-3xl font-bold text-gray-900">{workerDetails.daysWorkedThisMonth}</p>
+                                    <p className="text-sm text-gray-500 mt-1">Days</p>
                                 </div>
                             </div>
                         ) : (

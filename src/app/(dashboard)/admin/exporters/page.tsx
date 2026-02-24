@@ -2,6 +2,10 @@
 
 import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
+import {
+    Building2, MapPin, User, Phone, Mail,
+    Plus, Search, RefreshCw, Edit2, Power, PowerOff, X, Hash,
+} from 'lucide-react';
 
 interface Exporter {
     _id: string;
@@ -15,107 +19,76 @@ interface Exporter {
     isActive: boolean;
 }
 
+const emptyForm = {
+    exporterCode: '',
+    tinNumber: '',
+    companyTradingName: '',
+    companyAddress: '',
+    contactPerson: '',
+    phone: '',
+    email: '',
+};
+
 export default function AdminExportersPage() {
     const [exporters, setExporters] = useState<Exporter[]>([]);
     const [loading, setLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingExporter, setEditingExporter] = useState<Exporter | null>(null);
-    const [formData, setFormData] = useState({
-        exporterCode: '',
-        tinNumber: '',
-        companyTradingName: '',
-        companyAddress: '',
-        contactPerson: '',
-        phone: '',
-        email: '',
-    });
+    const [formData, setFormData] = useState(emptyForm);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
 
-    useEffect(() => {
-        fetchExporters();
-    }, []);
+    useEffect(() => { fetchExporters(); }, []);
 
     const fetchExporters = async () => {
         try {
             setLoading(true);
-            const res = await fetch('/api/exporters');
+            const res = await fetch('/api/exporters?all=true');
             const data = await res.json();
             setExporters(data.exporters || []);
-        } catch (error) {
-            console.error('Error fetching exporters:', error);
+        } catch {
             toast.error('Failed to load exporters');
         } finally {
             setLoading(false);
         }
     };
 
-    const handleAddExporter = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const res = await fetch('/api/exporters', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...formData, isActive: true }),
-            });
-
-            if (!res.ok) throw new Error('Add failed');
-
-            toast.success('Exporter added successfully');
-            setShowAddForm(false);
-            setFormData({
-                exporterCode: '',
-                tinNumber: '',
-                companyTradingName: '',
-                companyAddress: '',
-                contactPerson: '',
-                phone: '',
-                email: '',
-            });
-            fetchExporters();
-        } catch (error) {
-            toast.error('Failed to add exporter');
-        }
-    };
-
-    const handleEditExporter = (exporter: Exporter) => {
-        setEditingExporter(exporter);
+    const openAdd = () => { setEditingExporter(null); setFormData(emptyForm); setShowAddForm(true); };
+    const openEdit = (exp: Exporter) => {
+        setEditingExporter(exp);
         setFormData({
-            exporterCode: exporter.exporterCode,
-            tinNumber: exporter.tinNumber || '',
-            companyTradingName: exporter.companyTradingName,
-            companyAddress: exporter.companyAddress,
-            contactPerson: exporter.contactPerson,
-            phone: exporter.phone,
-            email: exporter.email,
+            exporterCode: exp.exporterCode, tinNumber: exp.tinNumber || '',
+            companyTradingName: exp.companyTradingName, companyAddress: exp.companyAddress,
+            contactPerson: exp.contactPerson, phone: exp.phone, email: exp.email,
         });
+        setShowAddForm(true);
     };
+    const closeForm = () => { setShowAddForm(false); setEditingExporter(null); setFormData(emptyForm); };
 
-    const handleUpdateExporter = async (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!editingExporter) return;
-
         try {
-            const res = await fetch(`/api/exporters/${editingExporter._id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-
-            if (!res.ok) throw new Error('Update failed');
-
-            toast.success('Exporter updated successfully');
-            setEditingExporter(null);
-            setFormData({
-                exporterCode: '',
-                tinNumber: '',
-                companyTradingName: '',
-                companyAddress: '',
-                contactPerson: '',
-                phone: '',
-                email: '',
-            });
+            if (editingExporter) {
+                const res = await fetch(`/api/exporters/${editingExporter._id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData),
+                });
+                if (!res.ok) throw new Error('Update failed');
+                toast.success('Exporter updated successfully');
+            } else {
+                const res = await fetch('/api/exporters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ ...formData, isActive: true }),
+                });
+                if (!res.ok) throw new Error('Add failed');
+                toast.success('Exporter added successfully');
+            }
+            closeForm();
             fetchExporters();
-        } catch (error) {
-            toast.error('Failed to update exporter');
+        } catch {
+            toast.error(editingExporter ? 'Failed to update exporter' : 'Failed to add exporter');
         }
     };
 
@@ -126,241 +99,359 @@ export default function AdminExportersPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ isActive: !exporter.isActive }),
             });
-
             if (!res.ok) throw new Error('Status update failed');
-
             toast.success(`Exporter ${!exporter.isActive ? 'activated' : 'deactivated'}`);
             fetchExporters();
-        } catch (error) {
+        } catch {
             toast.error('Failed to update status');
         }
     };
 
+    const filtered = exporters.filter(exp => {
+        const q = searchTerm.toLowerCase();
+        const matchSearch = !searchTerm ||
+            exp.companyTradingName.toLowerCase().includes(q) ||
+            exp.exporterCode.toLowerCase().includes(q) ||
+            exp.email.toLowerCase().includes(q) ||
+            exp.contactPerson.toLowerCase().includes(q);
+        const matchStatus = statusFilter === 'all' || (statusFilter === 'active' ? exp.isActive : !exp.isActive);
+        return matchSearch && matchStatus;
+    });
+
+    const active = exporters.filter(e => e.isActive).length;
+    const inactive = exporters.length - active;
+
     return (
-        <div>
+        <div className="space-y-6">
             <Toaster position="top-right" />
 
-            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Exporters Management</h1>
-                    <p className="mt-2 text-sm sm:text-base text-gray-600">Manage coffee exporters and their details</p>
+            {/* Header */}
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                <button
-                    onClick={() => setShowAddForm(true)}
-                    className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center"
-                >
-                    <span className="mr-2">+</span> Add Exporter
-                </button>
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                                <Building2 className="w-7 h-7 text-white" />
+                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Exporters</h1>
+                        </div>
+                        <p className="text-white/90 text-base sm:text-lg ml-15">Manage coffee exporters and sorting rates</p>
+                    </div>
+                    <button
+                        onClick={openAdd}
+                        className="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-white text-emerald-700 font-semibold rounded-xl hover:bg-emerald-50 transition-colors shadow-sm shrink-0"
+                    >
+                        <Plus className="w-5 h-5" /> Add Exporter
+                    </button>
+                </div>
             </div>
 
-            {/* Exporters List */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                {loading ? (
-                    <div className="col-span-full p-8 text-center text-gray-500">
-                        Loading exporters...
+            {/* Summary cards */}
+            <div className="grid grid-cols-3 gap-4">
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <Building2 className="w-5 h-5 text-gray-600" />
                     </div>
-                ) : exporters.length === 0 ? (
-                    <div className="col-span-full p-8 text-center text-gray-500">
-                        No exporters found
+                    <div>
+                        <p className="text-xs text-gray-500 font-medium">Total</p>
+                        <p className="text-2xl font-bold text-gray-900">{exporters.length}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl border border-green-200 shadow-sm p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-green-50 rounded-lg flex items-center justify-center">
+                        <Power className="w-5 h-5 text-green-600" />
+                    </div>
+                    <div>
+                        <p className="text-xs text-green-600 font-medium">Active</p>
+                        <p className="text-2xl font-bold text-gray-900">{active}</p>
+                    </div>
+                </div>
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                        <PowerOff className="w-5 h-5 text-gray-400" />
+                    </div>
+                    <div>
+                        <p className="text-xs text-gray-500 font-medium">Inactive</p>
+                        <p className="text-2xl font-bold text-gray-900">{inactive}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* Table card */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                {/* Toolbar */}
+                <div className="px-4 sm:px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row gap-3 sm:items-center justify-between">
+                    <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Exporter Directory</h3>
+                        <p className="text-xs text-gray-500 mt-0.5">{filtered.length} of {exporters.length} exporters</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                            <input
+                                type="text"
+                                placeholder="Search exporters..."
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                className="pl-9 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent w-44 sm:w-56"
+                            />
+                        </div>
+                        <select
+                            value={statusFilter}
+                            onChange={e => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+                            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        >
+                            <option value="all">All</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                        <button onClick={fetchExporters} className="p-1.5 rounded-lg hover:bg-gray-100 transition-colors" title="Refresh">
+                            <RefreshCw className="w-4 h-4 text-gray-500" />
+                        </button>
+                    </div>
+                </div>
+
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-14 text-gray-500">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-emerald-600 mb-3"></div>
+                        <p className="text-sm">Loading exporters...</p>
+                    </div>
+                ) : filtered.length === 0 ? (
+                    <div className="text-center py-16">
+                        <Building2 className="w-14 h-14 mx-auto mb-4 text-gray-200" />
+                        <p className="font-semibold text-gray-500 mb-1">No exporters found</p>
+                        <p className="text-sm text-gray-400 mb-5">
+                            {searchTerm ? 'Try adjusting your search.' : 'Add your first exporter to get started.'}
+                        </p>
+                        {!searchTerm && (
+                            <button onClick={openAdd} className="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 text-sm font-medium transition-colors">
+                                <Plus className="w-4 h-4" /> Add Exporter
+                            </button>
+                        )}
                     </div>
                 ) : (
-                    exporters.map((exporter) => (
-                        <div
-                            key={exporter._id}
-                            className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow"
-                        >
-                            <div className="flex justify-between items-start mb-4">
-                                <div>
-                                    <h3 className="text-lg font-semibold text-gray-900">
-                                        {exporter.companyTradingName}
-                                    </h3>
-                                    <p className="text-sm text-gray-500">
-                                        {exporter.tinNumber ? `TIN: ${exporter.tinNumber}` : exporter.exporterCode}
-                                    </p>
-                                </div>
-                                <span
-                                    className={`px-2 py-1 text-xs font-semibold rounded-full ${exporter.isActive
-                                            ? 'bg-green-100 text-green-800'
-                                            : 'bg-red-100 text-red-800'
-                                        }`}
-                                >
-                                    {exporter.isActive ? 'Active' : 'Inactive'}
-                                </span>
-                            </div>
-
-                            <div className="space-y-2 mb-4">
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <span className="mr-2">📍</span>
-                                    {exporter.companyAddress}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <span className="mr-2">👤</span>
-                                    {exporter.contactPerson}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <span className="mr-2">📞</span>
-                                    {exporter.phone}
-                                </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <span className="mr-2">✉️</span>
-                                    {exporter.email}
-                                </div>
-                            </div>
-
-                            <div className="flex space-x-2">
-                                <button
-                                    onClick={() => handleEditExporter(exporter)}
-                                    className="flex-1 px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-sm font-medium"
-                                >
-                                    Edit
-                                </button>
-                                <button
-                                    onClick={() => handleToggleStatus(exporter)}
-                                    className={`flex-1 px-4 py-2 rounded-lg transition-colors text-sm font-medium ${exporter.isActive
-                                            ? 'bg-red-50 text-red-600 hover:bg-red-100'
-                                            : 'bg-green-50 text-green-600 hover:bg-green-100'
-                                        }`}
-                                >
-                                    {exporter.isActive ? 'Deactivate' : 'Activate'}
-                                </button>
-                            </div>
-                        </div>
-                    ))
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                            <thead>
+                                <tr className="bg-gray-50 border-b border-gray-200">
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exporter</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Address</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-4 sm:px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {filtered.map(exp => (
+                                    <tr key={exp._id} className="hover:bg-emerald-50/30 transition-colors">
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center shrink-0">
+                                                    <Building2 className="w-4 h-4 text-emerald-600" />
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-semibold text-gray-900 text-sm">{exp.companyTradingName}</p>
+                                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                                        <Hash className="w-3 h-3 text-gray-400" />
+                                                        <span className="text-xs text-gray-400 font-mono">{exp.exporterCode}</span>
+                                                        {exp.tinNumber && (
+                                                            <span className="text-xs text-gray-400">· TIN: {exp.tinNumber}</span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4 hidden md:table-cell">
+                                            <div className="space-y-1">
+                                                <div className="flex items-center gap-1.5 text-sm text-gray-700">
+                                                    <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                                    <span className="truncate max-w-[140px]">{exp.contactPerson}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                    <Phone className="w-3 h-3 text-gray-400 shrink-0" />
+                                                    <span>{exp.phone}</span>
+                                                </div>
+                                                <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                                                    <Mail className="w-3 h-3 text-gray-400 shrink-0" />
+                                                    <span className="truncate max-w-[160px]">{exp.email}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4 hidden lg:table-cell">
+                                            <div className="flex items-start gap-1.5 text-sm text-gray-600">
+                                                <MapPin className="w-3.5 h-3.5 text-gray-400 mt-0.5 shrink-0" />
+                                                <span className="max-w-[160px] leading-snug">{exp.companyAddress}</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
+                                                exp.isActive
+                                                    ? 'bg-green-100 text-green-700'
+                                                    : 'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${exp.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                                                {exp.isActive ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => openEdit(exp)}
+                                                    className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                                    title="Edit"
+                                                >
+                                                    <Edit2 className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleStatus(exp)}
+                                                    className={`p-1.5 rounded-lg transition-colors ${
+                                                        exp.isActive
+                                                            ? 'bg-red-50 text-red-500 hover:bg-red-100'
+                                                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                                    }`}
+                                                    title={exp.isActive ? 'Deactivate' : 'Activate'}
+                                                >
+                                                    {exp.isActive ? <PowerOff className="w-3.5 h-3.5" /> : <Power className="w-3.5 h-3.5" />}
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
-            {/* Add/Edit Modal */}
-            {(showAddForm || editingExporter) && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
-                        <h2 className="text-2xl font-bold mb-4">
-                            {editingExporter ? 'Edit Exporter' : 'Add New Exporter'}
-                        </h2>
-                        <form
-                            onSubmit={editingExporter ? handleUpdateExporter : handleAddExporter}
-                            className="space-y-4"
-                        >
+            {/* Add / Edit Modal */}
+            {showAddForm && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-gray-100">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Exporter Code
+                                <h2 className="text-xl font-bold text-gray-900">
+                                    {editingExporter ? 'Edit Exporter' : 'Add New Exporter'}
+                                </h2>
+                                <p className="text-sm text-gray-500 mt-0.5">
+                                    {editingExporter ? 'Update the exporter details below.' : 'Fill in the details to register a new exporter.'}
+                                </p>
+                            </div>
+                            <button onClick={closeForm} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <span className="flex items-center gap-1.5"><Hash className="w-3.5 h-3.5 text-emerald-600" />Exporter Code</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        required
+                                        disabled={!!editingExporter}
+                                        value={formData.exporterCode}
+                                        onChange={e => setFormData({ ...formData, exporterCode: e.target.value.toUpperCase() })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm disabled:bg-gray-50 disabled:text-gray-500 uppercase"
+                                        placeholder="e.g. EXP001"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        TIN Number <span className="text-gray-400 font-normal">(optional)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={formData.tinNumber}
+                                        onChange={e => setFormData({ ...formData, tinNumber: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                                        placeholder="Tax ID"
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <span className="flex items-center gap-1.5"><Building2 className="w-3.5 h-3.5 text-emerald-600" />Company Trading Name</span>
                                 </label>
                                 <input
                                     type="text"
-                                    value={formData.exporterCode}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, exporterCode: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                                     required
-                                    disabled={!!editingExporter}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    TIN Number (Optional)
-                                </label>
-                                <input
-                                    type="text"
-                                    value={formData.tinNumber}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, tinNumber: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Company Trading Name
-                                </label>
-                                <input
-                                    type="text"
                                     value={formData.companyTradingName}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, companyTradingName: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                    required
+                                    onChange={e => setFormData({ ...formData, companyTradingName: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                                    placeholder="Company name"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Company Address
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <span className="flex items-center gap-1.5"><MapPin className="w-3.5 h-3.5 text-emerald-600" />Company Address</span>
                                 </label>
                                 <textarea
-                                    value={formData.companyAddress}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, companyAddress: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                    rows={2}
                                     required
+                                    rows={2}
+                                    value={formData.companyAddress}
+                                    onChange={e => setFormData({ ...formData, companyAddress: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm resize-none"
+                                    placeholder="Physical address"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Contact Person
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <span className="flex items-center gap-1.5"><User className="w-3.5 h-3.5 text-emerald-600" />Contact Person</span>
                                 </label>
                                 <input
                                     type="text"
+                                    required
                                     value={formData.contactPerson}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, contactPerson: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                    required
+                                    onChange={e => setFormData({ ...formData, contactPerson: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                                    placeholder="Full name"
                                 />
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Phone
-                                </label>
-                                <input
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, phone: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                    required
-                                />
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <span className="flex items-center gap-1.5"><Phone className="w-3.5 h-3.5 text-emerald-600" />Phone</span>
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        value={formData.phone}
+                                        onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                                        placeholder="+250..."
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <span className="flex items-center gap-1.5"><Mail className="w-3.5 h-3.5 text-emerald-600" />Email</span>
+                                    </label>
+                                    <input
+                                        type="email"
+                                        required
+                                        value={formData.email}
+                                        onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                                        placeholder="email@company.com"
+                                    />
+                                </div>
                             </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">
-                                    Email
-                                </label>
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) =>
-                                        setFormData({ ...formData, email: e.target.value })
-                                    }
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                                    required
-                                />
-                            </div>
-                            <div className="flex space-x-4 pt-4">
+                            <div className="flex gap-3 pt-2">
                                 <button
                                     type="submit"
-                                    className="flex-1 bg-emerald-600 text-white py-2 px-4 rounded-lg hover:bg-emerald-700 transition-colors"
+                                    className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm"
                                 >
                                     {editingExporter ? 'Save Changes' : 'Add Exporter'}
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        setShowAddForm(false);
-                                        setEditingExporter(null);
-                                        setFormData({
-                                            exporterCode: '',
-                                            tinNumber: '',
-                                            companyTradingName: '',
-                                            companyAddress: '',
-                                            contactPerson: '',
-                                            phone: '',
-                                            email: '',
-                                        });
-                                    }}
-                                    className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-400 transition-colors"
+                                    onClick={closeForm}
+                                    className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-sm"
                                 >
                                     Cancel
                                 </button>

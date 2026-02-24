@@ -49,34 +49,36 @@ export async function GET(request: NextRequest) {
 
         console.log('[Workers API] Found', workers.length, 'workers');
         
-        // Calculate earnings for each worker
+        // Get start/end of the current week (Monday–Sunday)
+        const now = new Date();
+        const dayOfWeek = now.getDay(); // 0 = Sun, 1 = Mon, ...
+        const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - daysFromMonday);
+        weekStart.setHours(0, 0, 0, 0);
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 7);
+
+        const SESSION_RATE = 2000; // RWF per session
+
+        // Calculate sessions this week and earnings for each worker
         const SessionModel = (await import('@/models/Session')).default;
         const workersWithEarnings = await Promise.all(
             workers.map(async (worker) => {
                 const workerObj = worker.toObject();
-                const DEFAULT_HOURLY_RATE = workerObj.hourlyRate || 50;
-                
-                // Get all sessions for this worker
-                const workerSessions = await SessionModel.find({ workerId: worker._id })
-                    .select('startTime endTime status');
-                
-                let totalHours = 0;
-                workerSessions.forEach((session: any) => {
-                    if (session.endTime) {
-                        const hours = (new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / (1000 * 60 * 60);
-                        totalHours += hours;
-                    } else if (session.status === 'active') {
-                        const hours = (Date.now() - new Date(session.startTime).getTime()) / (1000 * 60 * 60);
-                        totalHours += hours;
-                    }
+
+                // Count sessions this week for this worker
+                const weekSessions = await SessionModel.countDocuments({
+                    workerId: worker._id,
+                    date: { $gte: weekStart, $lt: weekEnd },
                 });
-                
-                const earnings = Math.round(totalHours * DEFAULT_HOURLY_RATE * 100) / 100;
-                
+
+                const earnings = weekSessions * SESSION_RATE;
+
                 return {
                     ...workerObj,
+                    weekSessions,
                     earnings,
-                    hourlyRate: DEFAULT_HOURLY_RATE
                 };
             })
         );

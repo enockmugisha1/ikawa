@@ -14,7 +14,7 @@ import {
     Info,
     Weight,
     Building2,
-    DollarSign,
+    Banknote,
     BarChart3
 } from 'lucide-react';
 
@@ -90,7 +90,7 @@ export default function SupervisorDashboard() {
             </div>
 
             {/* Quick Stats Summary Banner */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-4">
                 <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
                     <div className="flex items-center gap-2">
                         <Users className="w-4 h-4 text-emerald-600" />
@@ -115,7 +115,7 @@ export default function SupervisorDashboard() {
             {/* Stats Grid - High-Level Overview */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 sm:gap-6">
                 {/* Total Workers */}
-                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
@@ -136,7 +136,7 @@ export default function SupervisorDashboard() {
                 </div>
 
                 {/* Workers Checked In Today */}
-                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-emerald-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-emerald-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
@@ -155,7 +155,7 @@ export default function SupervisorDashboard() {
                 </div>
 
                 {/* Active Sessions */}
-                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-purple-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-purple-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
@@ -176,7 +176,7 @@ export default function SupervisorDashboard() {
                 </div>
 
                 {/* Bags Processed Today */}
-                <div className="relative overflow-hidden bg-white dark:bg-gray-900 rounded-xl shadow-sm border-l-4 border-l-amber-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-amber-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
                             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
@@ -195,19 +195,19 @@ export default function SupervisorDashboard() {
                 </div>
 
                 {/* Total Labor Costs Today */}
-                <div className="relative overflow-hidden bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl shadow-sm border-l-4 border-l-emerald-600 border-t border-r border-b border-emerald-200 dark:border-emerald-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-gray-400 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
                     <div className="relative">
                         <div className="flex items-center justify-between mb-4">
-                            <div className="w-12 h-12 bg-emerald-500 rounded-xl flex items-center justify-center">
-                                <DollarSign className="w-6 h-6 text-white" />
+                            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                                <Banknote className="w-6 h-6 text-gray-600 dark:text-gray-300" />
                             </div>
-                            <TrendingUp className="w-5 h-5 text-emerald-600" />
+                            <TrendingUp className="w-5 h-5 text-gray-400" />
                         </div>
-                        <p className="text-emerald-900 dark:text-emerald-300 text-sm font-medium">Labor Costs Today</p>
-                        <p className="mt-2 text-4xl font-bold text-emerald-900 dark:text-emerald-100">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Labor Costs Today</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
                             FRw {analytics?.totalLaborCostsToday?.toLocaleString() || 0}
                         </p>
-                        <p className="mt-2 text-sm text-emerald-700 dark:text-emerald-400 font-medium">
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 font-medium">
                             {analytics?.totalHoursWorked || 0} hrs worked
                         </p>
                     </div>
@@ -217,7 +217,7 @@ export default function SupervisorDashboard() {
             {/* Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Attendance Trend */}
-                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700/50 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Attendance Trend</h3>
@@ -265,7 +265,7 @@ export default function SupervisorDashboard() {
                 </div>
 
                 {/* Bags Processed Trend */}
-                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700/50 p-6">
                     <div className="flex items-center justify-between mb-6">
                         <div>
                             <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Bags Processed</h3>
@@ -311,7 +311,7 @@ export default function SupervisorDashboard() {
             </div>
 
             {/* Quick Actions */}
-            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700/50 p-6">
                 <h2 className="text-xl font-semibold mb-6 flex items-center gap-2 text-gray-900 dark:text-gray-100">
                     <Activity className="w-5 h-5 text-gray-600 dark:text-gray-400" />
                     Quick Actions
@@ -387,35 +387,30 @@ export default function SupervisorDashboard() {
             </div>
 
             {/* Info Card */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                <div className="flex items-start gap-4">
-                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <Info className="w-5 h-5 text-white" />
+            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700/50 rounded-xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                    <div className="w-9 h-9 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <Info className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </div>
-                    <div className="flex-1">
-                        <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-3 text-lg">
-                            Daily Workflow Guide
-                        </h3>
-                        <ol className="space-y-2">
-                            <li className="flex items-start gap-3">
-                                <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">1</span>
-                                <span className="text-blue-800 dark:text-blue-200 flex-1">Check-in workers as they arrive at the facility</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">2</span>
-                                <span className="text-blue-800 dark:text-blue-200 flex-1">Assign checked-in workers to exporters for sorting sessions</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">3</span>
-                                <span className="text-blue-800 dark:text-blue-200 flex-1">Record completed bags (select 2-4 workers per bag)</span>
-                            </li>
-                            <li className="flex items-start gap-3">
-                                <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">4</span>
-                                <span className="text-blue-800 dark:text-blue-200 flex-1">Check-out workers when their shift is complete</span>
-                            </li>
-                        </ol>
-                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+                        Daily Workflow Guide
+                    </h3>
                 </div>
+                <ol className="space-y-3">
+                    {[
+                        'Check-in workers as they arrive at the facility',
+                        'Assign checked-in workers to exporters for sorting sessions',
+                        'Record completed bags (select 2–4 workers per bag)',
+                        'Check-out workers when their shift is complete',
+                    ].map((step, i) => (
+                        <li key={i} className="flex items-start gap-3">
+                            <span className="flex items-center justify-center w-6 h-6 bg-gray-800 dark:bg-gray-600 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">
+                                {i + 1}
+                            </span>
+                            <span className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{step}</span>
+                        </li>
+                    ))}
+                </ol>
             </div>
         </div>
     );

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Users, RefreshCw } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Worker {
@@ -105,16 +106,28 @@ export default function AdminWorkersPage() {
     });
 
     return (
-        <div>
+        <div className="space-y-6">
             <Toaster position="top-right" />
 
-            <div className="mb-6 sm:mb-8">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Workers Management</h1>
-                <p className="mt-2 text-sm sm:text-base text-gray-600">Manage all workers across cooperatives</p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
+                </div>
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+                <div className="relative">
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                            <Users className="w-7 h-7 text-white" />
+                        </div>
+                        <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Workers Management</h1>
+                    </div>
+                    <p className="text-white/90 text-base sm:text-lg ml-15">Manage all workers across cooperatives</p>
+                </div>
             </div>
 
             {/* Filters */}
-            <div className="bg-white rounded-lg shadow p-4 sm:p-6 mb-4 sm:mb-6">
+            <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-4 sm:p-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -145,18 +158,28 @@ export default function AdminWorkersPage() {
                     <div className="flex items-end">
                         <button
                             onClick={fetchWorkers}
-                            className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                            className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
                         >
-                            🔄 Refresh
+                            <RefreshCw className="w-4 h-4" />
+                            Refresh
                         </button>
                     </div>
                 </div>
             </div>
 
             {/* Workers Table */}
-            <div className="bg-white rounded-lg shadow overflow-hidden">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-200 flex items-center justify-between">
+                    <div>
+                        <h3 className="text-base sm:text-lg font-semibold text-gray-900">Workers Directory</h3>
+                        <p className="text-xs sm:text-sm text-gray-500 mt-1">{filteredWorkers.length} worker{filteredWorkers.length !== 1 ? 's' : ''} found</p>
+                    </div>
+                </div>
                 {loading ? (
-                    <div className="p-8 text-center text-gray-500">Loading workers...</div>
+                    <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mb-4"></div>
+                        <p>Loading workers...</p>
+                    </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="min-w-full divide-y divide-gray-200">
@@ -181,14 +204,19 @@ export default function AdminWorkersPage() {
                             </thead>
                             <tbody className="bg-white divide-y divide-gray-200">
                                 {filteredWorkers.map((worker) => (
-                                    <tr key={worker._id} className="hover:bg-gray-50">
+                                    <tr key={worker._id} className="hover:bg-emerald-50/40 transition-colors">
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div>
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {worker.fullName}
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 bg-emerald-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <Users className="w-4 h-4 text-emerald-600" />
                                                 </div>
-                                                <div className="text-sm text-gray-500">
-                                                    {worker.workerId}
+                                                <div>
+                                                    <div className="text-sm font-semibold text-gray-900">
+                                                        {worker.fullName}
+                                                    </div>
+                                                    <div className="text-xs text-gray-500">
+                                                        {worker.workerId}
+                                                    </div>
                                                 </div>
                                             </div>
                                         </td>
@@ -214,29 +242,34 @@ export default function AdminWorkersPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button
-                                                onClick={() => handleEditWorker(worker)}
-                                                className="text-emerald-600 hover:text-emerald-900 mr-4"
-                                            >
-                                                Edit
-                                            </button>
-                                            <button
-                                                onClick={() => handleToggleStatus(worker)}
-                                                className={`${worker.status === 'active'
-                                                        ? 'text-red-600 hover:text-red-900'
-                                                        : 'text-green-600 hover:text-green-900'
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    onClick={() => handleEditWorker(worker)}
+                                                    className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors text-xs font-medium"
+                                                >
+                                                    Edit
+                                                </button>
+                                                <button
+                                                    onClick={() => handleToggleStatus(worker)}
+                                                    className={`px-3 py-1.5 rounded-lg transition-colors text-xs font-medium ${
+                                                        worker.status === 'active'
+                                                            ? 'bg-red-50 text-red-600 hover:bg-red-100'
+                                                            : 'bg-green-50 text-green-600 hover:bg-green-100'
                                                     }`}
-                                            >
-                                                {worker.status === 'active' ? 'Deactivate' : 'Activate'}
-                                            </button>
+                                                >
+                                                    {worker.status === 'active' ? 'Deactivate' : 'Activate'}
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                         {filteredWorkers.length === 0 && (
-                            <div className="p-8 text-center text-gray-500">
-                                No workers found
+                            <div className="p-12 text-center text-gray-500">
+                                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                                <p className="font-medium">No workers found</p>
+                                <p className="text-sm mt-1">Try adjusting your search or filter criteria</p>
                             </div>
                         )}
                     </div>
@@ -245,8 +278,8 @@ export default function AdminWorkersPage() {
 
             {/* Edit Modal */}
             {editMode && selectedWorker && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full max-h-[90vh] overflow-y-auto border border-gray-100">
                         <h2 className="text-2xl font-bold mb-4">Edit Worker</h2>
                         <form onSubmit={handleUpdateWorker} className="space-y-4">
                             <div>

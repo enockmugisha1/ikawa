@@ -14,6 +14,7 @@ import CooperativeModel from '@/models/Cooperative';
 import FacilityModel from '@/models/Facility';
 import EarningsModel from '@/models/Earnings';
 import AuditLogModel from '@/models/AuditLog';
+import WorkerRequestModel from '@/models/WorkerRequest';
 
 export {
   WorkerModel,
@@ -27,4 +28,5 @@ export {
   FacilityModel,
   EarningsModel,
   AuditLogModel,
+  WorkerRequestModel,
 };

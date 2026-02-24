@@ -203,3 +203,20 @@ export interface BagForm {
     workerIds: string[];
     weight?: number;
 }
+
+export interface WorkerRequest {
+    _id: string;
+    exporterId: string | Record<string, any>;
+    numberOfContainers: number;
+    numberOfBags: number;
+    numberOfWorkersNeeded: number;
+    startDate: Date | string;
+    idealCompletionDate: Date | string;
+    notes?: string;
+    status: 'pending' | 'approved' | 'rejected' | 'fulfilled';
+    adminNotes?: string;
+    reviewedBy?: string | Record<string, any>;
+    reviewedAt?: Date | string;
+    createdAt: Date | string;
+    updatedAt: Date | string;
+}

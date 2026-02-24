@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { GitBranch, User, Phone } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
 interface Cooperative {
@@ -89,39 +90,53 @@ export default function AdminCooperativesPage() {
     };
 
     return (
-        <div>
+        <div className="space-y-6">
             <Toaster position="top-right" />
 
-            <div className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                <div>
-                    <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Cooperatives Management</h1>
-                    <p className="mt-2 text-sm sm:text-base text-gray-600">Manage worker cooperatives</p>
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={handleInitUmucyo}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors flex items-center justify-center text-sm"
-                    >
-                        ✓ Init Umucyo
-                    </button>
-                    <button
-                        onClick={() => setShowAddForm(true)}
-                        className="px-4 sm:px-6 py-2 sm:py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-                    >
-                        <span className="mr-2">+</span> Add Cooperative
-                    </button>
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+                <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                                <GitBranch className="w-7 h-7 text-white" />
+                            </div>
+                            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Cooperatives Management</h1>
+                        </div>
+                        <p className="text-white/90 text-base sm:text-lg ml-15">Manage worker cooperatives</p>
+                    </div>
+                    <div className="flex gap-2 shrink-0">
+                        <button
+                            onClick={handleInitUmucyo}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-medium transition-colors border border-white/30 backdrop-blur-sm"
+                        >
+                            ✓ Init Umucyo
+                        </button>
+                        <button
+                            onClick={() => setShowAddForm(true)}
+                            className="inline-flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-sm font-medium transition-colors border border-white/30 backdrop-blur-sm"
+                        >
+                            <span>+</span> Add Cooperative
+                        </button>
+                    </div>
                 </div>
             </div>
 
             {/* Cooperatives List */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 {loading ? (
-                    <div className="col-span-full p-8 text-center text-gray-500">
-                        Loading cooperatives...
+                    <div className="col-span-full flex flex-col items-center justify-center py-12 text-gray-500">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mb-4"></div>
+                        <p>Loading cooperatives...</p>
                     </div>
                 ) : cooperatives.length === 0 ? (
-                    <div className="col-span-full bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
-                        <p className="text-gray-500 mb-4">No cooperatives found</p>
+                    <div className="col-span-full bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
+                        <GitBranch className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-500 mb-4 font-medium">No cooperatives found</p>
                         <button
                             onClick={handleInitUmucyo}
                             className="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
@@ -133,23 +148,23 @@ export default function AdminCooperativesPage() {
                     cooperatives.map((cooperative) => (
                         <div
                             key={cooperative._id}
-                            className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-lg transition-shadow"
+                            className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-lg hover:border-emerald-200 transition-all duration-200"
                         >
                             <div className="mb-4">
-                                <h3 className="text-lg font-semibold text-gray-900">
+                                <h3 className="text-base font-semibold text-gray-900">
                                     {cooperative.name}
                                 </h3>
-                                <p className="text-sm text-gray-500">{cooperative.code}</p>
+                                <p className="text-xs text-gray-400 font-mono mt-0.5">{cooperative.code}</p>
                             </div>
 
                             <div className="space-y-2 mb-4">
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <span className="mr-2">👤</span>
-                                    {cooperative.contactPerson}
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <User className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                    <span className="truncate">{cooperative.contactPerson}</span>
                                 </div>
-                                <div className="flex items-center text-sm text-gray-600">
-                                    <span className="mr-2">📞</span>
-                                    {cooperative.phone}
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                    <Phone className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                                    <span>{cooperative.phone}</span>
                                 </div>
                             </div>
 
@@ -171,8 +186,8 @@ export default function AdminCooperativesPage() {
 
             {/* Add Modal */}
             {showAddForm && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-lg p-6 sm:p-8 max-w-md w-full">
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl p-6 sm:p-8 max-w-md w-full border border-gray-100">
                         <h2 className="text-2xl font-bold mb-4">Add New Cooperative</h2>
                         <form onSubmit={handleAddCooperative} className="space-y-4">
                             <div>
