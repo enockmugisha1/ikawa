@@ -174,11 +174,18 @@ export default function WorkersPage() {
                     <div className="w-9 h-9 bg-gray-200 rounded-full flex items-center justify-center text-gray-600 font-semibold text-sm">
                         {worker.fullName.charAt(0).toUpperCase()}
                     </div>
-                    <div>
-                        <div className="font-medium text-gray-900">{worker.fullName}</div>
-                        <div className="text-xs text-gray-400">{worker.workerId}</div>
-                    </div>
+                    <div className="font-medium text-gray-900">{worker.fullName}</div>
                 </div>
+            )
+        },
+        {
+            key: 'workerId',
+            label: 'Worker ID',
+            sortable: true,
+            render: (worker) => (
+                <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-mono font-semibold border border-emerald-200">
+                    {worker.workerId}
+                </span>
             )
         },
         {
@@ -520,7 +527,7 @@ export default function WorkersPage() {
                 >
                     <div className="flex items-center gap-3">
                         <Users className="w-5 h-5 text-gray-600" />
-                        <span className="font-medium text-gray-900">Workers Table</span>
+                        <span className="font-medium text-gray-900">Workers Data</span>
                         <span className="px-2 py-0.5 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
                             {workers.length}
                         </span>

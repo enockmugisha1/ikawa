@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
-import WorkerModel from '@/models/Worker';
-import BagModel from '@/models/Bag';
-import SessionModel from '@/models/Session';
-import RateCardModel from '@/models/RateCard';
+// Import all models via barrel to ensure schemas are registered for populate
+import { WorkerModel, BagModel, SessionModel, RateCardModel } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { getStartOfDay, getEndOfDay } from '@/lib/utils';
 
@@ -15,7 +13,16 @@ export async function GET(request: NextRequest) {
         }
 
         if (!currentUser.exporterId) {
-            return NextResponse.json({ error: 'Exporter ID not found' }, { status: 400 });
+            // Return empty analytics instead of error when exporterId is not configured
+            return NextResponse.json({
+                analytics: {
+                    totalBags: 0, workersEngaged: 0, totalWeight: 0, avgBagsPerDay: 0,
+                    bagsToday: 0, totalWeightToday: 0, totalHoursWorked: 0, costToday: 0,
+                    bagsThisWeek: 0, bagsThisMonth: 0, costThisMonth: 0,
+                    ratePerBag: 0, totalCost: 0, projectedMonthlyCost: 0,
+                    trends: { bags: [], weight: [] },
+                }
+            });
         }
 
         await dbConnect();

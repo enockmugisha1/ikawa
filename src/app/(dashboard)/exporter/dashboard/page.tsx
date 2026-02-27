@@ -1,10 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { 
-    Package, 
-    Users, 
-    TrendingUp, 
+import {
+    Package,
+    Users,
+    TrendingUp,
     Calendar,
     Weight,
     Clock,
@@ -12,7 +12,9 @@ import {
     AlertCircle,
     DollarSign,
     ChevronLeft,
-    ChevronRight
+    ChevronRight,
+    RefreshCw,
+    Info
 } from 'lucide-react';
 import { ExportButton } from '@/components/export/ExportButton';
 import { ExportData } from '@/lib/export';
@@ -21,6 +23,8 @@ export default function ExporterDashboard() {
     const [bags, setBags] = useState<any[]>([]);
     const [analytics, setAnalytics] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
     const [exporterInfo, setExporterInfo] = useState({ name: 'Exporter', code: 'EXP' });
     const [currentPage, setCurrentPage] = useState(1);
     const ITEMS_PER_PAGE = 10;
@@ -39,12 +43,12 @@ export default function ExporterDashboard() {
 
             const bagsData = await bagsRes.json();
             const analyticsData = await analyticsRes.json();
-            
+
             const myBags = bagsData.bags || [];
             setBags(myBags);
             setAnalytics(analyticsData.analytics);
-            
-            // Get exporter info from first bag or use defaults
+            setLastUpdated(new Date());
+
             if (myBags.length > 0 && myBags[0].exporterId) {
                 setExporterInfo({
                     name: myBags[0].exporterId.companyTradingName || 'Exporter',
@@ -56,6 +60,12 @@ export default function ExporterDashboard() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRefresh = async () => {
+        setRefreshing(true);
+        await fetchData();
+        setRefreshing(false);
     };
 
     const getExportData = (): ExportData => {
@@ -80,206 +90,259 @@ export default function ExporterDashboard() {
     };
 
     return (
-        <div className="space-y-6 sm:space-y-8">
+        <div className="space-y-6">
             {/* Header */}
-            <div className="relative overflow-hidden bg-gradient-to-br from-blue-500 via-indigo-600 to-blue-700 dark:from-blue-600 dark:via-indigo-700 dark:to-blue-800 rounded-2xl p-8 shadow-xl shadow-blue-500/30">
+            <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
+                {/* Background Pattern */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, #ffffff 1px, transparent 1px)', backgroundSize: '20px 20px' }}></div>
                 </div>
+
+                {/* Decorative gradient circles */}
                 <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-300/20 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-teal-300/20 rounded-full blur-3xl"></div>
+
                 <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div>
                         <div className="flex items-center gap-3 mb-3">
-                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30">
+                            <div className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30 animate-bounce-once">
                                 <TrendingUp className="w-7 h-7 text-white" />
                             </div>
-                            <h1 className="text-3xl sm:text-4xl font-bold text-white drop-shadow-lg">Exporter Dashboard</h1>
+                            <h1 className="text-4xl font-bold text-white drop-shadow-lg">Exporter Dashboard</h1>
                         </div>
-                        <p className="text-white/90 text-base sm:text-lg ml-15">
-                            Coffee export operations &amp; performance overview
+                        <p className="text-white/90 text-lg ml-15">
+                            Coffee export operations & performance overview
                         </p>
-                        <p className="text-white/70 text-sm mt-1 ml-15 flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-                        </p>
+                        {lastUpdated && (
+                            <p className="text-xs text-white/70 mt-2 ml-15">
+                                Last updated: {lastUpdated.toLocaleTimeString()}
+                            </p>
+                        )}
                     </div>
                     <div className="flex gap-2 flex-wrap">
                         <ExportButton data={getExportData()} label="Export Data" />
                         <button
-                            onClick={fetchData}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all shadow-lg"
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all disabled:opacity-50 shadow-lg"
                         >
-                            <Clock className="w-4 h-4" />
+                            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
                             Refresh
                         </button>
                     </div>
                 </div>
             </div>
 
+            {/* Quick Stats Summary Banner */}
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-4">
+                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                    <div className="flex items-center gap-2">
+                        <Package className="w-4 h-4 text-blue-600" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.totalBags || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">total bags</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="flex items-center gap-2">
+                        <Users className="w-4 h-4 text-purple-600" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.workersEngaged || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">workers engaged</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="flex items-center gap-2">
+                        <Weight className="w-4 h-4 text-emerald-600" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.totalWeight?.toLocaleString() || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">kg total</span>
+                    </div>
+                </div>
+            </div>
+
             {/* Main Stats Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl shadow-lg border border-blue-200 dark:border-blue-700 p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-xl flex items-center justify-center shadow">
-                            <Package className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+                {/* Total Bags */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                <Package className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <TrendingUp className="w-5 h-5 text-blue-400" />
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Bags</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.totalBags || 0}</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">All time processed</p>
                     </div>
-                    <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Total Bags</p>
-                    <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.totalBags || 0}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-blue-600 dark:text-blue-400">All time processed</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl shadow-lg border border-purple-200 dark:border-purple-700 p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-xl flex items-center justify-center shadow">
-                            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                {/* Workers Engaged */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-purple-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-xl flex items-center justify-center">
+                                <Users className="w-6 h-6 text-purple-600" />
+                            </div>
+                            <BarChart3 className="w-5 h-5 text-purple-500" />
                         </div>
-                        <BarChart3 className="w-5 h-5 text-purple-400" />
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Workers Engaged</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.workersEngaged || 0}</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Unique workers</p>
                     </div>
-                    <p className="text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Workers Engaged</p>
-                    <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.workersEngaged || 0}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-purple-600 dark:text-purple-400">Unique workers</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-xl shadow-lg border border-emerald-200 dark:border-emerald-700 p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-500 rounded-xl flex items-center justify-center shadow">
-                            <Weight className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                {/* Total Weight */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-emerald-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center">
+                                <Weight className="w-6 h-6 text-emerald-600" />
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-emerald-500" />
                         </div>
-                        <TrendingUp className="w-5 h-5 text-emerald-400" />
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Weight</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.totalWeight?.toLocaleString() || 0}</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">kg processed</p>
                     </div>
-                    <p className="text-emerald-700 dark:text-emerald-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Total Weight</p>
-                    <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.totalWeight?.toLocaleString() || 0}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-emerald-600 dark:text-emerald-400">kg processed</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-900/30 dark:to-amber-900/30 rounded-xl shadow-lg border border-orange-200 dark:border-orange-700 p-4 sm:p-6">
-                    <div className="flex items-center justify-between mb-3">
-                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 rounded-xl flex items-center justify-center shadow">
-                            <Clock className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                {/* Daily Average */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-amber-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center">
+                                <Clock className="w-6 h-6 text-amber-600" />
+                            </div>
+                            <TrendingUp className="w-5 h-5 text-amber-500" />
                         </div>
-                        <TrendingUp className="w-5 h-5 text-orange-400" />
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Daily Average</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.avgBagsPerDay?.toFixed(1) || 0}</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">bags per day</p>
                     </div>
-                    <p className="text-orange-700 dark:text-orange-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Daily Average</p>
-                    <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">{analytics?.avgBagsPerDay?.toFixed(1) || 0}</p>
-                    <p className="mt-2 text-xs sm:text-sm text-orange-600 dark:text-orange-400">bags per day</p>
                 </div>
             </div>
 
             {/* Financial Metrics */}
             {analytics && analytics.ratePerBag > 0 && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/30 dark:to-emerald-900/30 rounded-xl shadow-lg border border-green-200 dark:border-green-700 p-4 sm:p-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500 rounded-lg flex items-center justify-center">
-                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    {/* Cost Today */}
+                    <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-green-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                        <div className="relative">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                                    <DollarSign className="w-6 h-6 text-green-600" />
+                                </div>
+                                <TrendingUp className="w-5 h-5 text-green-500" />
                             </div>
-                            <TrendingUp className="w-5 h-5 text-green-500" />
+                            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Cost Today</p>
+                            <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                                FRw {analytics.costToday?.toLocaleString() || 0}
+                            </p>
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics.bagsToday || 0} bags @ FRw {analytics.ratePerBag}/bag</p>
                         </div>
-                        <p className="text-green-700 dark:text-green-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Cost Today</p>
-                        <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-                            FRw {analytics.costToday?.toLocaleString() || 0}
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-green-600 dark:text-green-400">{analytics.bagsToday || 0} bags @ FRw {analytics.ratePerBag}/bag</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-xl shadow-lg border border-blue-200 dark:border-blue-700 p-4 sm:p-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    {/* Cost This Month */}
+                    <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                        <div className="relative">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                    <DollarSign className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <Calendar className="w-5 h-5 text-blue-500" />
                             </div>
-                            <Calendar className="w-5 h-5 text-blue-500" />
+                            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Cost This Month</p>
+                            <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                                FRw {analytics.costThisMonth?.toLocaleString() || 0}
+                            </p>
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics.bagsThisMonth || 0} bags processed</p>
                         </div>
-                        <p className="text-blue-700 dark:text-blue-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Cost This Month</p>
-                        <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-                            FRw {analytics.costThisMonth?.toLocaleString() || 0}
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-blue-600 dark:text-blue-400">{analytics.bagsThisMonth || 0} bags processed</p>
                     </div>
 
-                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl shadow-lg border border-purple-200 dark:border-purple-700 p-4 sm:p-6">
-                        <div className="flex items-center justify-between mb-3">
-                            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500 rounded-lg flex items-center justify-center">
-                                <DollarSign className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+                    {/* Total Cost */}
+                    <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-gray-400 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                        <div className="relative">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
+                                    <DollarSign className="w-6 h-6 text-gray-600 dark:text-gray-300" />
+                                </div>
+                                <BarChart3 className="w-5 h-5 text-gray-400" />
                             </div>
-                            <BarChart3 className="w-5 h-5 text-purple-500" />
+                            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Cost</p>
+                            <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                                FRw {analytics.totalCost?.toLocaleString() || 0}
+                            </p>
+                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">All time charges</p>
                         </div>
-                        <p className="text-purple-700 dark:text-purple-300 text-xs sm:text-sm font-medium uppercase tracking-wide">Total Cost</p>
-                        <p className="mt-1 text-3xl sm:text-4xl font-bold text-gray-900 dark:text-gray-100">
-                            FRw {analytics.totalCost?.toLocaleString() || 0}
-                        </p>
-                        <p className="mt-2 text-xs sm:text-sm text-purple-600 dark:text-purple-400">All time charges</p>
                     </div>
                 </div>
             )}
 
-            {/* Period Stats */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-200 dark:border-gray-700">
-                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Performance Overview</h3>
-                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Bags processed across different periods</p>
+            {/* Performance Overview */}
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700/50 p-6">
+                <div className="flex items-center justify-between mb-6">
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Performance Overview</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Bags processed across different periods</p>
+                    </div>
+                    <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                        <BarChart3 className="w-5 h-5 text-blue-600" />
+                    </div>
                 </div>
-                <div className="p-4 sm:p-6">
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                        <div className="bg-blue-50 dark:bg-blue-900/20 rounded-xl p-4 border border-blue-200 dark:border-blue-700">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center shadow">
-                                    <Calendar className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide">Today</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsToday || 0}</p>
-                                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
+                    <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                                <Calendar className="w-5 h-5 text-blue-600" />
                             </div>
-                            <div className="flex items-center justify-between text-xs text-blue-600 dark:text-blue-400">
-                                <span>Bags processed</span>
-                                <span className="font-semibold">{analytics?.bagsToday > 0 ? '✓ Active' : '• Pending'}</span>
+                            <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">Today</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsToday || 0}</p>
                             </div>
                         </div>
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>Bags processed</span>
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">{analytics?.bagsToday > 0 ? 'Active' : 'Pending'}</span>
+                        </div>
+                    </div>
 
-                        <div className="bg-purple-50 dark:bg-purple-900/20 rounded-xl p-4 border border-purple-200 dark:border-purple-700">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center shadow">
-                                    <BarChart3 className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-purple-600 dark:text-purple-400 font-medium uppercase tracking-wide">This Week</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsThisWeek || 0}</p>
-                                </div>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border-l-4 border-l-purple-500 border-t border-r border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center">
+                                <BarChart3 className="w-5 h-5 text-purple-600" />
                             </div>
-                            <div className="flex items-center justify-between text-xs text-purple-600 dark:text-purple-400">
-                                <span>Last 7 days</span>
-                                <span className="font-semibold">{((analytics?.bagsThisWeek || 0) / 7).toFixed(1)} avg/day</span>
+                            <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">This Week</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsThisWeek || 0}</p>
                             </div>
                         </div>
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>Last 7 days</span>
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">{((analytics?.bagsThisWeek || 0) / 7).toFixed(1)} avg/day</span>
+                        </div>
+                    </div>
 
-                        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-4 border border-emerald-200 dark:border-emerald-700">
-                            <div className="flex items-center gap-3 mb-3">
-                                <div className="w-10 h-10 bg-emerald-500 rounded-lg flex items-center justify-center shadow">
-                                    <TrendingUp className="w-5 h-5 text-white" />
-                                </div>
-                                <div>
-                                    <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium uppercase tracking-wide">This Month</p>
-                                    <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsThisMonth || 0}</p>
-                                </div>
+                    <div className="bg-white dark:bg-[#1e293b] rounded-xl p-4 border-l-4 border-l-emerald-500 border-t border-r border-b border-gray-200 dark:border-gray-700">
+                        <div className="flex items-center gap-3 mb-3">
+                            <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg flex items-center justify-center">
+                                <TrendingUp className="w-5 h-5 text-emerald-600" />
                             </div>
-                            <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400">
-                                <span>Monthly total</span>
-                                <span className="font-semibold">{(((analytics?.bagsThisMonth || 0) / new Date().getDate()) * 30).toFixed(0)} projected</span>
+                            <div>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium uppercase tracking-wide">This Month</p>
+                                <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{analytics?.bagsThisMonth || 0}</p>
                             </div>
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
+                            <span>Monthly total</span>
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">{(((analytics?.bagsThisMonth || 0) / new Date().getDate()) * 30).toFixed(0)} projected</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             {/* Recent Bags */}
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
-                <div className="px-4 sm:px-6 py-4 sm:py-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+            <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700/50">
+                <div className="px-6 py-5 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
                     <div>
-                        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Bags</h3>
-                        <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">Latest processed bags</p>
+                        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Recent Bags</h3>
+                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Latest processed bags</p>
                     </div>
                     {bags.length > 0 && (
                         <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded-full text-xs font-semibold">
@@ -287,11 +350,11 @@ export default function ExporterDashboard() {
                         </span>
                     )}
                 </div>
-                <div className="p-4 sm:p-6">
+                <div className="p-6">
                     {loading ? (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                            <p>Loading data...</p>
+                            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p className="text-sm">Loading data...</p>
                         </div>
                     ) : bags.length === 0 ? (
                         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
@@ -306,7 +369,7 @@ export default function ExporterDashboard() {
                             <>
                                 <div className="space-y-3">
                                     {pageBags.map((bag, idx) => (
-                                        <div key={bag._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all gap-3 sm:gap-0 bg-white dark:bg-gray-800">
+                                        <div key={bag._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all gap-3 sm:gap-0 bg-white dark:bg-[#1e293b]">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
                                                     <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
@@ -339,7 +402,7 @@ export default function ExporterDashboard() {
                                                         ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
                                                         : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400'
                                                 }`}>
-                                                    {bag.status === 'completed' ? '✓ Complete' : '⏳ Pending'}
+                                                    {bag.status === 'completed' ? 'Complete' : 'Pending'}
                                                 </div>
                                             </div>
                                         </div>
@@ -369,7 +432,6 @@ export default function ExporterDashboard() {
                                                 <ChevronLeft className="w-4 h-4" /> Prev
                                             </button>
 
-                                            {/* Page numbers */}
                                             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                                 const start = Math.max(1, Math.min(currentPage - 2, totalPages - 4));
                                                 const page = start + i;
@@ -412,21 +474,21 @@ export default function ExporterDashboard() {
                 </div>
             </div>
 
-            {/* Info Banner */}
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-2 border-blue-200 dark:border-blue-700 rounded-xl p-4 sm:p-6">
-                <div className="flex items-start gap-3 sm:gap-4">
-                    <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center flex-shrink-0">
-                        <AlertCircle className="w-5 h-5 text-white" />
+            {/* Info Card */}
+            <div className="bg-white dark:bg-[#1e293b] border border-gray-200 dark:border-gray-700/50 rounded-xl p-6 shadow-sm">
+                <div className="flex items-center gap-3 mb-5">
+                    <div className="w-9 h-9 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                        <Info className="w-5 h-5 text-gray-600 dark:text-gray-300" />
                     </div>
-                    <div className="flex-1">
-                        <p className="font-semibold text-gray-900 dark:text-gray-100 mb-2">Read-Only Access</p>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
-                            You have view-only access to your processing data. You cannot modify attendance,
-                            worker assignments, or bag records. For any data corrections or updates,
-                            please contact the system administrator.
-                        </p>
-                    </div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
+                        Read-Only Access
+                    </h3>
                 </div>
+                <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+                    You have view-only access to your processing data. You cannot modify attendance,
+                    worker assignments, or bag records. For any data corrections or updates,
+                    please contact the system administrator.
+                </p>
             </div>
         </div>
     );

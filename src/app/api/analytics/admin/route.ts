@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
-import WorkerModel from '@/models/Worker';
-import AttendanceModel from '@/models/Attendance';
-import SessionModel from '@/models/Session';
-import BagModel from '@/models/Bag';
-import ExporterModel from '@/models/Exporter';
-import FacilityModel from '@/models/Facility';
-import RateCardModel from '@/models/RateCard';
+// Import all models via barrel to ensure all schemas are registered for populate
+import { WorkerModel, AttendanceModel, SessionModel, BagModel, ExporterModel, FacilityModel, RateCardModel } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { getStartOfDay, getEndOfDay } from '@/lib/utils';
 
@@ -104,10 +99,12 @@ export async function GET(request: NextRequest) {
         const avgBagsPerDayLast30 = bagsLast30Days / 30;
         const exportersServedToday = exportersToday.length;
 
-        // Calculate total costs
+        // Build per-exporter breakdown and calculate total costs today
         let totalCostsToday = 0;
+        const exporterBreakdown: any[] = [];
+
         const exporterIds = [...new Set(allBagsToday.map((bag: any) => bag.exporterId?._id?.toString()).filter(Boolean))];
-        
+
         if (exporterIds.length > 0) {
             const rateCards = await RateCardModel.find({
                 exporterId: { $in: exporterIds },
@@ -119,23 +116,46 @@ export async function GET(request: NextRequest) {
                 ]
             });
 
-            const rateMap = new Map();
+            const rateMap = new Map<string, number>();
             rateCards.forEach((rc: any) => {
                 rateMap.set(rc.exporterId.toString(), rc.ratePerBag);
             });
 
-            const exporterBagCounts = new Map();
+            // Group bags + weight per exporter
+            const exporterDataMap = new Map<string, { name: string; code: string; bags: number; weight: number }>();
             allBagsToday.forEach((bag: any) => {
-                const exporterId = bag.exporterId?._id?.toString();
-                if (exporterId) {
-                    exporterBagCounts.set(exporterId, (exporterBagCounts.get(exporterId) || 0) + 1);
+                const expId = bag.exporterId?._id?.toString();
+                if (!expId) return;
+                if (!exporterDataMap.has(expId)) {
+                    exporterDataMap.set(expId, {
+                        name: bag.exporterId?.companyTradingName || 'Unknown',
+                        code: bag.exporterId?.exporterCode || '',
+                        bags: 0,
+                        weight: 0,
+                    });
                 }
+                const entry = exporterDataMap.get(expId)!;
+                entry.bags += 1;
+                entry.weight += bag.weight || 60;
             });
 
-            exporterBagCounts.forEach((bagCount, exporterId) => {
-                const rate = rateMap.get(exporterId) || 0;
-                totalCostsToday += bagCount * rate;
+            exporterDataMap.forEach((entry, expId) => {
+                const rate = rateMap.get(expId) || 0;
+                const cost = entry.bags * rate;
+                totalCostsToday += cost;
+                exporterBreakdown.push({
+                    exporterId: expId,
+                    name: entry.name,
+                    code: entry.code,
+                    bagsToday: entry.bags,
+                    weightToday: entry.weight,
+                    ratePerBag: rate,
+                    costToday: Math.round(cost * 100) / 100,
+                });
             });
+
+            // Sort by bags descending
+            exporterBreakdown.sort((a, b) => b.bagsToday - a.bagsToday);
         }
 
         // Get trend data (last 7 days)
@@ -190,6 +210,9 @@ export async function GET(request: NextRequest) {
             avgBagsPerDayLast30: Math.round(avgBagsPerDayLast30 * 10) / 10,
             bagsLast7Days,
             bagsLast30Days,
+
+            // Per-exporter breakdown for today
+            exporterBreakdown,
 
             // Trend data
             trends: {

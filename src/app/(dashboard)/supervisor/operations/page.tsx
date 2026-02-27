@@ -95,7 +95,8 @@ export default function OperationsPage() {
 
     const fetchWorkers = async () => {
         try {
-            const res = await fetch('/api/workers');
+            // Only fetch active workers for check-in operations
+            const res = await fetch('/api/workers?status=active');
             const data = await res.json();
             setWorkers(data.workers || []);
         } catch (error) {

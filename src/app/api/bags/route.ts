@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import dbConnect from '@/lib/db';
-import BagModel from '@/models/Bag';
-import SessionModel from '@/models/Session';
+// Import all models via barrel to ensure schemas are registered for populate
+import { BagModel, SessionModel } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { generateBagNumber } from '@/lib/utils';
 
