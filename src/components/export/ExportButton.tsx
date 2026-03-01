@@ -9,12 +9,17 @@ interface ExportButtonProps {
   data: ExportData;
   label?: string;
   showFormatSelector?: boolean;
+  variant?: 'default' | 'header';
 }
 
-export function ExportButton({ data, label = 'Export', showFormatSelector = true }: ExportButtonProps) {
+export function ExportButton({ data, label = 'Export', showFormatSelector = true, variant = 'default' }: ExportButtonProps) {
   const { settings } = useSettings();
   const [isExporting, setIsExporting] = useState(false);
   const [showMenu, setShowMenu] = useState(false);
+
+  const buttonClass = variant === 'header'
+    ? 'flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all disabled:opacity-50 shadow-lg'
+    : 'flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
 
   const handleExport = async (format: ExportFormat) => {
     setIsExporting(true);
@@ -41,7 +46,7 @@ export function ExportButton({ data, label = 'Export', showFormatSelector = true
       <button
         onClick={() => handleExport(settings.exports.defaultFormat)}
         disabled={isExporting}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className={buttonClass}
       >
         <Download className="h-4 w-4" />
         {isExporting ? 'Exporting...' : label}
@@ -54,7 +59,7 @@ export function ExportButton({ data, label = 'Export', showFormatSelector = true
       <button
         onClick={() => setShowMenu(!showMenu)}
         disabled={isExporting}
-        className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className={buttonClass}
       >
         <Download className="h-4 w-4" />
         {isExporting ? 'Exporting...' : label}

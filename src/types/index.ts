@@ -9,6 +9,8 @@ export interface User {
     exporterId?: string;
     facilityId?: string;
     isActive: boolean;
+    resetOtp?: string | null;
+    resetOtpExpiry?: Date | null;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -21,6 +23,7 @@ export interface Worker {
     dateOfBirth?: Date;
     ageRange?: string;
     phone: string;
+    email?: string;
     photo: string;
     cooperativeId: string;
     primaryRole: string;
@@ -35,6 +38,7 @@ export interface Worker {
     householdSize?: string;
     isPrimaryEarner?: boolean;
     skillsNotes?: string;
+    qrToken?: string;
     // Consent
     consentWorkRecords: boolean;
     consentAnonymizedReporting: boolean;

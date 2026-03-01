@@ -19,6 +19,8 @@ import {
     ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
+import { ExportButton } from '@/components/export/ExportButton';
+import { ExportData } from '@/lib/export';
 
 export default function AdminDashboard() {
     const [analytics, setAnalytics] = useState<any>(null);
@@ -48,6 +50,19 @@ export default function AdminDashboard() {
         setRefreshing(true);
         await fetchAnalytics();
         setRefreshing(false);
+    };
+
+    const getExportData = (): ExportData => {
+        return {
+            exporterName: 'Admin',
+            exporterCode: 'ADMIN',
+            summary: {
+                totalBags: analytics?.totalBags || 0,
+                totalWeight: analytics?.totalKilograms || 0,
+                totalWorkers: analytics?.totalWorkers || 0,
+                averageWeight: analytics?.totalBags > 0 ? (analytics?.totalKilograms || 0) / analytics.totalBags : 0,
+            },
+        };
     };
 
     const quickActions = [
@@ -183,14 +198,17 @@ export default function AdminDashboard() {
                             <p className="text-xs text-white/70 mt-2 ml-15">Last updated: {lastUpdated.toLocaleTimeString()}</p>
                         )}
                     </div>
-                    <button
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all disabled:opacity-50 shadow-lg"
-                    >
-                        <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                        Refresh
-                    </button>
+                    <div className="flex gap-2 flex-wrap">
+                        <ExportButton data={getExportData()} label="Export Data" variant="header" />
+                        <button
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                            className="inline-flex items-center gap-2 px-5 py-2.5 bg-white/20 backdrop-blur-sm border border-white/30 text-white rounded-xl hover:bg-white/30 font-medium transition-all disabled:opacity-50 shadow-lg"
+                        >
+                            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                            Refresh
+                        </button>
+                    </div>
                 </div>
             </div>
 

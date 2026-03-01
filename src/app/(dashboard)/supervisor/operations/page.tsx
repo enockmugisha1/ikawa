@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { 
-    UserCheck, 
-    UserX, 
-    Package, 
-    Link2, 
+import {
+    UserCheck,
+    UserX,
+    Package,
+    Link2,
     Activity,
     Users,
     TrendingUp,
@@ -17,8 +17,10 @@ import {
     Search,
     Weight,
     Building2,
-    Banknote
+    Banknote,
+    QrCode
 } from 'lucide-react';
+import { QrScannerModal } from '@/components/qr/QrScannerModal';
 
 interface Worker {
     _id: string;
@@ -65,6 +67,7 @@ export default function OperationsPage() {
     const [searchWorkerId, setSearchWorkerId] = useState('');
     const [currentTime, setCurrentTime] = useState('');
     const [operationsMetrics, setOperationsMetrics] = useState<any>(null);
+    const [showQrScanner, setShowQrScanner] = useState(false);
 
     useEffect(() => {
         // Set initial time and update every second
@@ -320,6 +323,17 @@ export default function OperationsPage() {
         <div className="space-y-6">
             <Toaster position="top-right" />
 
+            {/* QR Scanner Modal */}
+            {showQrScanner && (
+                <QrScannerModal
+                    onClose={() => setShowQrScanner(false)}
+                    onCheckInSuccess={(result) => {
+                        toast.success(`${result.workerName} checked in via QR`);
+                        fetchAttendance();
+                    }}
+                />
+            )}
+
             {/* Header */}
             <div className="relative overflow-hidden bg-gradient-to-br from-emerald-500 via-teal-600 to-emerald-700 dark:from-emerald-600 dark:via-teal-700 dark:to-emerald-800 rounded-2xl p-8 shadow-xl shadow-emerald-500/30">
                 {/* Background Pattern */}
@@ -519,18 +533,27 @@ export default function OperationsPage() {
                                 </div>
                             </div>
 
+                            {/* QR Scan Button */}
+                            <button
+                                onClick={() => setShowQrScanner(true)}
+                                className="w-full mb-4 flex items-center justify-center gap-3 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-semibold text-sm transition-colors shadow-md shadow-emerald-500/20"
+                            >
+                                <QrCode className="w-5 h-5" />
+                                Scan QR Badge to Check In
+                            </button>
+
                             {/* Quick Search by Worker ID */}
                             <div className="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
                                 <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-2">
                                     <Search className="w-4 h-4 text-gray-700" />
-                                    Quick Check-in: Enter Worker ID or Phone
+                                    Or check in manually: Worker ID or Phone
                                 </label>
                                 <div className="flex gap-3">
                                     <input
                                         type="text"
                                         value={searchWorkerId}
                                         onChange={(e) => setSearchWorkerId(e.target.value)}
-                                        onKeyPress={(e) => e.key === 'Enter' && handleQuickCheckIn()}
+                                        onKeyDown={(e) => e.key === 'Enter' && handleQuickCheckIn()}
                                         placeholder="WORK001, 0788123456, or worker name..."
                                         className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-medium"
                                     />
@@ -543,9 +566,6 @@ export default function OperationsPage() {
                                         Check In
                                     </button>
                                 </div>
-                                <p className="text-xs text-gray-600 mt-2">
-                                    💡 Tip: Scan QR code or type Worker ID for faster check-in
-                                </p>
                             </div>
 
                             {/* Worker List Table */}

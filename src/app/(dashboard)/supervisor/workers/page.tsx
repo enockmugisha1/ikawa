@@ -1,8 +1,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserPlus, Users, Phone, Calendar, User, Filter, X, ChevronDown, Search, Clock, Package, Banknote, Award, TrendingUp, Eye, BarChart2 } from 'lucide-react';
+import { UserPlus, Users, Phone, Calendar, User, Filter, X, ChevronDown, Search, Clock, Package, Banknote, Award, TrendingUp, Eye, BarChart2, QrCode } from 'lucide-react';
 import DataTable, { Column } from '@/components/DataTable';
+import { WorkerQrModal } from '@/components/qr/WorkerQrModal';
 
 const SESSION_RATE = 2000;
 
@@ -53,6 +54,7 @@ export default function WorkersPage() {
     const [selectedWorker, setSelectedWorker] = useState<string | null>(null);
     const [workerDetails, setWorkerDetails] = useState<WorkerDetails | null>(null);
     const [loadingDetails, setLoadingDetails] = useState(false);
+    const [qrWorker, setQrWorker] = useState<{ id: string; name: string } | null>(null);
     
     const [filters, setFilters] = useState<FilterParams>({
         search: '',
@@ -180,7 +182,7 @@ export default function WorkersPage() {
         },
         {
             key: 'workerId',
-            label: 'Worker ID',
+            label: 'National ID',
             sortable: true,
             render: (worker) => (
                 <span className="inline-flex items-center px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-700 text-xs font-mono font-semibold border border-emerald-200">
@@ -277,13 +279,23 @@ export default function WorkersPage() {
             label: 'Actions',
             sortable: false,
             render: (worker) => (
-                <button
-                    onClick={() => fetchWorkerDetails(worker._id)}
-                    className="inline-flex items-center gap-2 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200"
-                >
-                    <Eye className="w-4 h-4" />
-                    View Details
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => fetchWorkerDetails(worker._id)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg text-sm font-medium transition-colors border border-gray-200"
+                    >
+                        <Eye className="w-4 h-4" />
+                        Details
+                    </button>
+                    <button
+                        onClick={() => setQrWorker({ id: worker._id, name: worker.fullName })}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-lg text-sm font-medium transition-colors border border-emerald-200"
+                        title="Show QR Badge"
+                    >
+                        <QrCode className="w-4 h-4" />
+                        QR
+                    </button>
+                </div>
             )
         }
     ];
@@ -626,6 +638,15 @@ export default function WorkersPage() {
                         )}
                     </div>
                 </div>
+            )}
+
+            {/* QR Badge Modal */}
+            {qrWorker && (
+                <WorkerQrModal
+                    workerId={qrWorker.id}
+                    workerName={qrWorker.name}
+                    onClose={() => setQrWorker(null)}
+                />
             )}
         </div>
     );

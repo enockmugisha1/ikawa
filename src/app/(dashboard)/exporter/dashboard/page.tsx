@@ -9,7 +9,6 @@ import {
     Weight,
     Clock,
     BarChart3,
-    AlertCircle,
     DollarSign,
     ChevronLeft,
     ChevronRight,
@@ -120,7 +119,7 @@ export default function ExporterDashboard() {
                         )}
                     </div>
                     <div className="flex gap-2 flex-wrap">
-                        <ExportButton data={getExportData()} label="Export Data" />
+                        <ExportButton data={getExportData()} label="Export Data" variant="header" />
                         <button
                             onClick={handleRefresh}
                             disabled={refreshing}
@@ -133,28 +132,6 @@ export default function ExporterDashboard() {
                 </div>
             </div>
 
-            {/* Quick Stats Summary Banner */}
-            <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-4">
-                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
-                    <div className="flex items-center gap-2">
-                        <Package className="w-4 h-4 text-blue-600" />
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.totalBags || 0}</span>
-                        <span className="text-gray-600 dark:text-gray-400">total bags</span>
-                    </div>
-                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
-                    <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-purple-600" />
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.workersEngaged || 0}</span>
-                        <span className="text-gray-600 dark:text-gray-400">workers engaged</span>
-                    </div>
-                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
-                    <div className="flex items-center gap-2">
-                        <Weight className="w-4 h-4 text-emerald-600" />
-                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.totalWeight?.toLocaleString() || 0}</span>
-                        <span className="text-gray-600 dark:text-gray-400">kg total</span>
-                    </div>
-                </div>
-            </div>
 
             {/* Main Stats Cards */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
@@ -220,60 +197,58 @@ export default function ExporterDashboard() {
             </div>
 
             {/* Financial Metrics */}
-            {analytics && analytics.ratePerBag > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
-                    {/* Cost Today */}
-                    <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-green-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-                        <div className="relative">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
-                                    <DollarSign className="w-6 h-6 text-green-600" />
-                                </div>
-                                <TrendingUp className="w-5 h-5 text-green-500" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                {/* Daily Labor Cost */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-green-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-xl flex items-center justify-center">
+                                <DollarSign className="w-6 h-6 text-green-600" />
                             </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Cost Today</p>
-                            <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                FRw {analytics.costToday?.toLocaleString() || 0}
-                            </p>
-                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics.bagsToday || 0} bags @ FRw {analytics.ratePerBag}/bag</p>
+                            <TrendingUp className="w-5 h-5 text-green-500" />
                         </div>
-                    </div>
-
-                    {/* Cost This Month */}
-                    <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-                        <div className="relative">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
-                                    <DollarSign className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <Calendar className="w-5 h-5 text-blue-500" />
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Cost This Month</p>
-                            <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                FRw {analytics.costThisMonth?.toLocaleString() || 0}
-                            </p>
-                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics.bagsThisMonth || 0} bags processed</p>
-                        </div>
-                    </div>
-
-                    {/* Total Cost */}
-                    <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-gray-400 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
-                        <div className="relative">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center">
-                                    <DollarSign className="w-6 h-6 text-gray-600 dark:text-gray-300" />
-                                </div>
-                                <BarChart3 className="w-5 h-5 text-gray-400" />
-                            </div>
-                            <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Total Cost</p>
-                            <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
-                                FRw {analytics.totalCost?.toLocaleString() || 0}
-                            </p>
-                            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">All time charges</p>
-                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Daily Labor Cost</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                            FRw {(analytics?.costToday || 0).toLocaleString()}
+                        </p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics?.bagsToday || 0} bags today {analytics?.ratePerBag ? `@ FRw ${analytics.ratePerBag}/bag` : ''}</p>
                     </div>
                 </div>
-            )}
+
+                {/* Monthly Cost */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-blue-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center">
+                                <DollarSign className="w-6 h-6 text-blue-600" />
+                            </div>
+                            <Calendar className="w-5 h-5 text-blue-500" />
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Monthly Cost</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                            FRw {(analytics?.costThisMonth || 0).toLocaleString()}
+                        </p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics?.bagsThisMonth || 0} bags this month</p>
+                    </div>
+                </div>
+
+                {/* Cumulative Cost */}
+                <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-orange-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
+                    <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                            <div className="w-12 h-12 bg-orange-100 dark:bg-orange-900/30 rounded-xl flex items-center justify-center">
+                                <DollarSign className="w-6 h-6 text-orange-600" />
+                            </div>
+                            <BarChart3 className="w-5 h-5 text-orange-500" />
+                        </div>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm font-medium">Cumulative Cost</p>
+                        <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
+                            FRw {(analytics?.totalCost || 0).toLocaleString()}
+                        </p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">All time labor charges</p>
+                    </div>
+                </div>
+            </div>
 
             {/* Performance Overview */}
             <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-lg border border-gray-200 dark:border-gray-700/50 p-6">
@@ -371,8 +346,8 @@ export default function ExporterDashboard() {
                                     {pageBags.map((bag, idx) => (
                                         <div key={bag._id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl hover:border-blue-400 dark:hover:border-blue-500 hover:shadow-md transition-all gap-3 sm:gap-0 bg-white dark:bg-[#1e293b]">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
-                                                    <Package className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                                                <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                                                    <Package className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                                                 </div>
                                                 <div>
                                                     <div className="flex items-center gap-2">
@@ -397,10 +372,10 @@ export default function ExporterDashboard() {
                                                     <p className="font-bold text-gray-900 dark:text-gray-100 text-lg">{bag.weight} kg</p>
                                                     <p className="text-xs text-gray-500 dark:text-gray-400 capitalize">{bag.status}</p>
                                                 </div>
-                                                <div className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                                <div className={`px-3 py-1 rounded-full text-xs font-bold ${
                                                     bag.status === 'completed'
-                                                        ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400'
-                                                        : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400'
+                                                        ? 'bg-emerald-600 text-white'
+                                                        : 'bg-amber-500 text-white'
                                                 }`}>
                                                     {bag.status === 'completed' ? 'Complete' : 'Pending'}
                                                 </div>

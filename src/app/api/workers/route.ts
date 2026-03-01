@@ -3,6 +3,9 @@ import dbConnect from '@/lib/db';
 import WorkerModel from '@/models/Worker';
 import { getCurrentUser } from '@/lib/auth';
 import { generateWorkerId } from '@/lib/utils';
+import { randomUUID } from 'crypto';
+import QRCode from 'qrcode';
+import { sendQrBadgeEmail } from '@/lib/email';
 
 // GET - List all workers
 export async function GET(request: NextRequest) {
@@ -136,9 +139,25 @@ export async function POST(request: NextRequest) {
         const worker = await WorkerModel.create({
             ...cleanedBody,
             workerId,
+            qrToken: randomUUID(),
             enrollmentDate: new Date(),
             consentTimestamp: new Date(),
         });
+
+        // Send QR badge email if worker has email
+        if (worker.email) {
+            try {
+                const qrDataUrl = await QRCode.toDataURL(`CWMS:${worker.qrToken}`, {
+                    width: 280,
+                    margin: 2,
+                    color: { dark: '#065f46', light: '#ffffff' },
+                    errorCorrectionLevel: 'M',
+                });
+                await sendQrBadgeEmail(worker.email, worker.fullName, worker.workerId, qrDataUrl);
+            } catch (emailErr) {
+                console.error('[Workers API] QR email failed (non-blocking):', emailErr);
+            }
+        }
 
         console.log('[Workers API] Worker created successfully:', worker._id);
         return NextResponse.json({ worker }, { status: 201 });

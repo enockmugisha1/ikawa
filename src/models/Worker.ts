@@ -30,6 +30,11 @@ const workerSchema = new Schema(
             required: true,
             trim: true,
         },
+        email: {
+            type: String,
+            trim: true,
+            lowercase: true,
+        },
         photo: {
             type: String,
             required: true,
@@ -68,6 +73,12 @@ const workerSchema = new Schema(
         householdSize: String,
         isPrimaryEarner: Boolean,
         skillsNotes: String,
+        // QR code token for check-in scanning
+        qrToken: {
+            type: String,
+            unique: true,
+            sparse: true,
+        },
         // Consent
         consentWorkRecords: {
             type: Boolean,
