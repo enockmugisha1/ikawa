@@ -1,7 +1,8 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
-import { X, Palette, Download, Bell } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { X, Palette, Download, Bell, Activity, RefreshCw, Clock } from 'lucide-react';
 import { ThemeToggle } from '../theme/ThemeToggle';
 import { useSettings, ExportFormat, DateFormat } from '@/contexts/SettingsContext';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -9,6 +10,23 @@ import { useTheme } from '@/contexts/ThemeContext';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface PopulatedSession {
+  _id: string;
+  workerId: { _id: string; fullName: string; workerId: string };
+  exporterId: { _id: string; companyTradingName: string };
+  facilityId: { _id: string; name: string };
+  startTime: string;
+  status: 'active' | 'closed' | 'validated';
+}
+
+function elapsed(startTime: string) {
+  const diff = Math.floor((Date.now() - new Date(startTime).getTime()) / 1000);
+  const h = Math.floor(diff / 3600);
+  const m = Math.floor((diff % 3600) / 60);
+  if (h > 0) return `${h}h ${m}m`;
+  return `${m}m`;
 }
 
 export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
