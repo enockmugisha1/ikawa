@@ -37,6 +37,7 @@ export async function GET(request: NextRequest) {
         const [
             totalWorkers,
             workersCheckedInToday,
+            workersCheckedOutToday,
             activeSessions,
             bagsToday,
             bagsLast7Days,
@@ -52,10 +53,16 @@ export async function GET(request: NextRequest) {
                 date: { $gte: startOfDay, $lte: endOfDay },
             }),
 
-            // 3. Active sessions count
+            // 3. Workers checked out today
+            AttendanceModel.countDocuments({
+                date: { $gte: startOfDay, $lte: endOfDay },
+                status: 'checked-out',
+            }),
+
+            // 4. Active sessions count
             SessionModel.countDocuments({ status: 'active' }),
 
-            // 4. Total bags assigned today
+            // 5. Total bags assigned today
             BagModel.countDocuments({
                 date: { $gte: startOfDay, $lte: endOfDay },
             }),
@@ -91,7 +98,6 @@ export async function GET(request: NextRequest) {
                 const hours = (new Date(session.endTime).getTime() - new Date(session.startTime).getTime()) / (1000 * 60 * 60);
                 totalHoursWorked += hours;
             } else if (session.status === 'active') {
-                // For active sessions, calculate up to now
                 const hours = (Date.now() - new Date(session.startTime).getTime()) / (1000 * 60 * 60);
                 totalHoursWorked += hours;
             }
@@ -109,10 +115,9 @@ export async function GET(request: NextRequest) {
         // Number of exporters served today
         const exportersServedToday = exportersToday.length;
 
-        // Calculate total labor costs (hours × hourly rate)
-        // Default hourly rate if not specified
-        const DEFAULT_HOURLY_RATE = 50;
-        let totalLaborCostsToday = totalHoursWorked * DEFAULT_HOURLY_RATE;
+        // Labor cost = number of sessions today × 2,000 FRw per session
+        const SESSION_RATE = 2000;
+        const totalLaborCostsToday = sessionsToday.length * SESSION_RATE;
 
         // Calculate costs
         let projectedCosts = 0;
@@ -183,13 +188,14 @@ export async function GET(request: NextRequest) {
         const analytics = {
             totalWorkers,
             workersCheckedInToday,
+            workersCheckedOutToday,
             activeSessions,
             bagsToday,
             totalKilograms,
             totalHoursWorked: Math.round(totalHoursWorked * 10) / 10, // Round to 1 decimal
             avgWorkersPerBag: Math.round(avgWorkersPerBag * 10) / 10, // Round to 1 decimal
             exportersServedToday,
-            totalLaborCostsToday: Math.round(totalLaborCostsToday * 100) / 100, // Round to 2 decimals
+            totalLaborCostsToday, // sessions × 2,000 FRw
             projectedCosts: Math.round(projectedCosts * 100) / 100, // Round to 2 decimals
             totalCostForExporters: Math.round(totalCostForExporters * 100) / 100,
             trends: {

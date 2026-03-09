@@ -9,26 +9,36 @@ interface SidebarProfileProps {
 
 export function SidebarProfile({ profileHref, onSettingsClick }: SidebarProfileProps) {
     return (
-        <div className="p-3 border-t border-gray-100 dark:border-gray-700/40 space-y-1">
-            <a
-                href={profileHref}
-                className="group flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200"
-            >
-                <span className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-gray-100 dark:bg-white/5 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/40 transition-all duration-200">
-                    <User className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400" />
-                </span>
-                <span className="truncate">Profile</span>
-            </a>
+        <div className="px-3 py-3 border-t border-gray-100 dark:border-gray-700/40">
+            <div className="flex items-center gap-2 px-2 py-2 rounded-xl bg-gray-50 dark:bg-white/5">
+                {/* Avatar */}
+                <div className="w-8 h-8 rounded-full bg-emerald-100 dark:bg-emerald-900/40 flex items-center justify-center shrink-0">
+                    <User className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                </div>
 
-            <button
-                onClick={onSettingsClick}
-                className="group w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-800 dark:hover:text-gray-200 transition-all duration-200"
-            >
-                <span className="flex items-center justify-center w-8 h-8 rounded-lg shrink-0 bg-gray-100 dark:bg-white/5 group-hover:bg-emerald-50 dark:group-hover:bg-emerald-950/40 transition-all duration-200">
-                    <Settings className="w-4 h-4 text-gray-400 dark:text-gray-500 group-hover:text-emerald-500 dark:group-hover:text-emerald-400" />
+                {/* Label */}
+                <span className="flex-1 text-xs font-medium text-gray-600 dark:text-gray-400 truncate">
+                    My Account
                 </span>
-                <span className="truncate">Settings</span>
-            </button>
+
+                {/* Profile icon link */}
+                <a
+                    href={profileHref}
+                    title="Profile"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 transition-all"
+                >
+                    <User className="w-3.5 h-3.5" />
+                </a>
+
+                {/* Settings icon button */}
+                <button
+                    onClick={onSettingsClick}
+                    title="Settings"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 dark:hover:text-emerald-400 transition-all"
+                >
+                    <Settings className="w-3.5 h-3.5" />
+                </button>
+            </div>
         </div>
     );
 }

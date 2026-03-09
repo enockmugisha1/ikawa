@@ -12,7 +12,7 @@ interface WorkerQrModalProps {
 
 export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalProps) {
     const [qrDataUrl, setQrDataUrl] = useState<string>('');
-    const [qrInfo, setQrInfo] = useState<{ qrToken: string; workerId: string } | null>(null);
+    const [qrInfo, setQrInfo] = useState<{ qrToken: string; workerId: string; phone?: string } | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const printRef = useRef<HTMLDivElement>(null);
@@ -29,7 +29,7 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
             const data = await res.json();
             if (!res.ok) throw new Error(data.error);
 
-            setQrInfo({ qrToken: data.qrToken, workerId: data.workerId });
+            setQrInfo({ qrToken: data.qrToken, workerId: data.workerId, phone: data.phone });
 
             // Generate QR code image from token
             const url = await QRCode.toDataURL(`CWMS:${data.qrToken}`, {
@@ -46,11 +46,85 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
         }
     };
 
-    const handleDownload = () => {
+    const handleDownload = async () => {
         if (!qrDataUrl || !qrInfo) return;
+
+        const W = 340;
+        const H = qrInfo.phone ? 430 : 410;
+        const canvas = document.createElement('canvas');
+        canvas.width = W;
+        canvas.height = H;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // White background + border
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, W, H);
+        ctx.strokeStyle = '#065f46';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.roundRect(2, 2, W - 4, H - 4, 10);
+        ctx.stroke();
+
+        // Emerald header
+        ctx.fillStyle = '#065f46';
+        ctx.beginPath();
+        ctx.roundRect(0, 0, W, 64, [10, 10, 0, 0]);
+        ctx.fill();
+        ctx.fillStyle = '#ffffff';
+        ctx.textAlign = 'center';
+        ctx.font = 'bold 20px Arial, sans-serif';
+        ctx.fillText('CWMS', W / 2, 36);
+        ctx.font = '11px Arial, sans-serif';
+        ctx.fillStyle = '#a7f3d0';
+        ctx.fillText('Coffee Worker Management System', W / 2, 54);
+
+        // QR code
+        const qrImg = new Image();
+        qrImg.src = qrDataUrl;
+        await new Promise<void>((resolve) => { qrImg.onload = () => resolve(); });
+        const qrSize = 210;
+        const qrX = (W - qrSize) / 2;
+        ctx.drawImage(qrImg, qrX, 78, qrSize, qrSize);
+
+        // Worker name
+        ctx.fillStyle = '#111827';
+        ctx.font = 'bold 17px Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(workerName, W / 2, 315);
+
+        // Phone number
+        let nextY = 336;
+        if (qrInfo.phone) {
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '13px Arial, sans-serif';
+            ctx.fillText(qrInfo.phone, W / 2, nextY);
+            nextY += 22;
+        }
+
+        // Worker ID badge
+        const idText = `ID: ${qrInfo.workerId}`;
+        ctx.font = '11px monospace, Courier New';
+        const idW = ctx.measureText(idText).width + 24;
+        const idX = (W - idW) / 2;
+        ctx.fillStyle = '#f0fdf4';
+        ctx.beginPath();
+        ctx.roundRect(idX, nextY, idW, 22, 4);
+        ctx.fill();
+        ctx.strokeStyle = '#d1fae5';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        ctx.fillStyle = '#065f46';
+        ctx.fillText(idText, W / 2, nextY + 15);
+
+        // Scan hint
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '10px Arial, sans-serif';
+        ctx.fillText('Scan this QR code to check in', W / 2, H - 14);
+
         const link = document.createElement('a');
         link.download = `QR-Badge-${workerName.replace(/\s+/g, '_')}.png`;
-        link.href = qrDataUrl;
+        link.href = canvas.toDataURL('image/png');
         link.click();
     };
 
@@ -79,7 +153,8 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
                     }
                     .badge-header span { font-size: 8pt; display: block; opacity: 0.85; margin-top: 1px; }
                     .qr-img { width: 50mm; height: 50mm; margin: 0 auto 3mm; display: block; border: 1px solid #d1fae5; border-radius: 2mm; }
-                    .worker-name { font-size: 13pt; font-weight: bold; color: #111827; margin-bottom: 1.5mm; }
+                    .worker-name { font-size: 13pt; font-weight: bold; color: #111827; margin-bottom: 1mm; }
+                    .worker-phone { font-size: 9.5pt; color: #6b7280; margin-bottom: 2mm; }
                     .worker-id { font-size: 9pt; color: #6b7280; font-family: monospace; background: #f0fdf4; padding: 1.5mm 3mm; border-radius: 2mm; display: inline-block; margin-bottom: 3mm; }
                     .scan-hint { font-size: 7.5pt; color: #9ca3af; border-top: 1px solid #e5e7eb; padding-top: 2mm; margin-top: 1mm; }
                     @media print { body { background: white; } }
@@ -93,6 +168,7 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
                     </div>
                     <img src="${qrDataUrl}" class="qr-img" alt="QR Code" />
                     <div class="worker-name">${workerName}</div>
+                    ${qrInfo.phone ? `<div class="worker-phone">${qrInfo.phone}</div>` : ''}
                     <div class="worker-id">ID: ${qrInfo.workerId}</div>
                     <div class="scan-hint">Scan this QR code to check in</div>
                 </div>
@@ -157,6 +233,9 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
                                         <User className="w-4 h-4 text-gray-400" />
                                         <p className="font-bold text-gray-900 text-base">{workerName}</p>
                                     </div>
+                                    {qrInfo?.phone && (
+                                        <p className="text-sm text-gray-500 mb-1">{qrInfo.phone}</p>
+                                    )}
                                     <p className="text-xs font-mono text-gray-500 bg-gray-50 px-3 py-1 rounded-md inline-block mb-2">
                                         ID: {qrInfo?.workerId}
                                     </p>

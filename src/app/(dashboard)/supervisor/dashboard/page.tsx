@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from 'react';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { 
-    Users, 
-    Activity, 
-    Package, 
-    TrendingUp, 
-    Clock, 
+import {
+    Users,
+    Activity,
+    Package,
+    TrendingUp,
+    Clock,
     UserPlus,
+    UserCheck,
+    UserX,
     Settings,
     RefreshCw,
     Info,
@@ -91,11 +93,17 @@ export default function SupervisorDashboard() {
 
             {/* Quick Stats Summary Banner */}
             <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-4">
-                <div className="flex flex-wrap items-center justify-center gap-6 text-sm">
+                <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm">
                     <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-emerald-600" />
+                        <UserCheck className="w-4 h-4 text-emerald-600" />
                         <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.workersCheckedInToday || 0}</span>
-                        <span className="text-gray-600 dark:text-gray-400">workers today</span>
+                        <span className="text-gray-600 dark:text-gray-400">checked in</span>
+                    </div>
+                    <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
+                    <div className="flex items-center gap-2">
+                        <UserX className="w-4 h-4 text-rose-500" />
+                        <span className="font-semibold text-gray-900 dark:text-gray-100">{analytics?.workersCheckedOutToday || 0}</span>
+                        <span className="text-gray-600 dark:text-gray-400">checked out</span>
                     </div>
                     <div className="w-px h-4 bg-gray-300 dark:bg-gray-600"></div>
                     <div className="flex items-center gap-2">

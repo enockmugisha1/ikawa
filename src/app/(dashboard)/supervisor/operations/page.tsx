@@ -269,6 +269,22 @@ export default function OperationsPage() {
         exporterId: '',
         workers: [] as string[],
     });
+    const [bagWorkerSearch, setBagWorkerSearch] = useState('');
+    const [assignedWorkerIds, setAssignedWorkerIds] = useState<string[]>([]);
+
+    const fetchAssignedWorkersForExporter = async (exporterId: string) => {
+        try {
+            const today = new Date().toISOString().split('T')[0];
+            const res = await fetch(`/api/bags?exporterId=${exporterId}&date=${today}`);
+            const data = await res.json();
+            const ids: string[] = (data.bags || []).flatMap((bag: any) =>
+                bag.workers.map((w: any) => (w.workerId?._id || w.workerId) as string)
+            );
+            setAssignedWorkerIds([...new Set(ids)]);
+        } catch {
+            setAssignedWorkerIds([]);
+        }
+    };
 
     const handleWorkerToggle = (workerId: string) => {
         setBagFormData((prev) => {
@@ -307,9 +323,12 @@ export default function OperationsPage() {
             }
 
             toast.success('Bag recorded successfully!');
-            setBagFormData({ exporterId: '', workers: [] });
-            fetchSessions(); // Refresh data
-            fetchAttendance(); // Refresh attendance
+            // Keep exporter selected; clear worker selection and refresh assigned list
+            const currentExporterId = bagFormData.exporterId;
+            setBagFormData(prev => ({ ...prev, workers: [] }));
+            fetchSessions();
+            fetchAttendance();
+            fetchAssignedWorkersForExporter(currentExporterId);
         } catch (error) {
             toast.error(error instanceof Error ? error.message : 'Failed to assign bag');
         } finally {
@@ -550,6 +569,7 @@ export default function OperationsPage() {
                                 </label>
                                 <div className="flex gap-3">
                                     <input
+                                        suppressHydrationWarning
                                         type="text"
                                         value={searchWorkerId}
                                         onChange={(e) => setSearchWorkerId(e.target.value)}
@@ -829,7 +849,13 @@ export default function OperationsPage() {
                                 </label>
                                 <select
                                     value={bagFormData.exporterId}
-                                    onChange={(e) => setBagFormData({ ...bagFormData, exporterId: e.target.value, workers: [] })}
+                                    onChange={(e) => {
+                                        const id = e.target.value;
+                                        setBagFormData({ exporterId: id, workers: [] });
+                                        setBagWorkerSearch('');
+                                        if (id) fetchAssignedWorkersForExporter(id);
+                                        else setAssignedWorkerIds([]);
+                                    }}
                                     className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent bg-white font-medium"
                                 >
                                     <option value="">-- Select Exporter Company --</option>
@@ -849,17 +875,62 @@ export default function OperationsPage() {
                             {/* Workers Table */}
                             {bagFormData.exporterId ? (
                                 <div className="bg-white rounded-lg border border-gray-200">
+                                    {/* Action bar — above the list */}
                                     <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-                                        <div className="flex items-center justify-between">
-                                            <h4 className="font-medium text-gray-900">Select Workers (2-4 required)</h4>
-                                            <span className={`text-sm font-medium ${
-                                                bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                    ? 'text-gray-600' 
-                                                    : 'text-gray-500'
-                                            }`}>
-                                                {bagFormData.workers.length} / 4 selected
-                                            </span>
+                                        <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                                            {/* Summary + Assign button */}
+                                            <div className="flex items-center gap-3 flex-1">
+                                                <div className="flex items-center gap-2 text-sm">
+                                                    <CheckCircle2 className={`w-4 h-4 flex-shrink-0 ${
+                                                        bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4
+                                                            ? 'text-gray-700'
+                                                            : 'text-gray-300'
+                                                    }`} />
+                                                    <span className="text-gray-600">
+                                                        <strong>{bagFormData.workers.length}</strong> / 4 selected
+                                                        {bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4
+                                                            ? ' · Ready'
+                                                            : ' · Need 2–4'}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            {/* Search */}
+                                            <div className="relative flex-1 max-w-xs">
+                                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                                <input
+                                                    suppressHydrationWarning
+                                                    type="text"
+                                                    placeholder="Search worker..."
+                                                    value={bagWorkerSearch}
+                                                    onChange={(e) => setBagWorkerSearch(e.target.value)}
+                                                    className="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-400 focus:border-transparent"
+                                                />
+                                            </div>
+                                            {/* Assign Bag button */}
+                                            <button
+                                                onClick={handleRecordBag}
+                                                disabled={loading || bagFormData.workers.length < 2 || bagFormData.workers.length > 4}
+                                                className="flex-shrink-0 px-6 py-2.5 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow flex items-center gap-2"
+                                            >
+                                                {loading ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                        Recording...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Package className="w-4 h-4" />
+                                                        Assign Bag
+                                                    </>
+                                                )}
+                                            </button>
                                         </div>
+                                        {assignedWorkerIds.length > 0 && (
+                                            <p className="text-xs text-amber-600 mt-2 flex items-center gap-1">
+                                                <span>⚠</span>
+                                                {assignedWorkerIds.length} worker{assignedWorkerIds.length > 1 ? 's' : ''} already assigned a bag today — hidden from list
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="overflow-x-auto">
@@ -880,19 +951,45 @@ export default function OperationsPage() {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-gray-200">
-                                                {sessions
-                                                    .filter(s => s.exporterId._id === bagFormData.exporterId)
-                                                    .map((session) => {
+                                                {(() => {
+                                                    const filtered = sessions
+                                                        .filter(s => s.exporterId._id === bagFormData.exporterId)
+                                                        .filter(s => !assignedWorkerIds.includes(s.workerId._id))
+                                                        .filter(s => !bagWorkerSearch || s.workerId.fullName.toLowerCase().includes(bagWorkerSearch.toLowerCase()) || s.workerId.workerId.toLowerCase().includes(bagWorkerSearch.toLowerCase()));
+
+                                                    if (filtered.length === 0) {
+                                                        return (
+                                                            <tr>
+                                                                <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                                                                    <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                                                                    {sessions.filter(s => s.exporterId._id === bagFormData.exporterId).length === 0 ? (
+                                                                        <>
+                                                                            <p>No workers currently assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}</p>
+                                                                            <p className="text-sm text-gray-400 mt-1">Assign workers in the "Assign Exporter" tab first</p>
+                                                                        </>
+                                                                    ) : bagWorkerSearch ? (
+                                                                        <p>No workers match "{bagWorkerSearch}"</p>
+                                                                    ) : (
+                                                                        <>
+                                                                            <p className="font-medium">All workers have been assigned a bag today</p>
+                                                                            <p className="text-sm text-gray-400 mt-1">All active workers for this exporter already have a bag recorded</p>
+                                                                        </>
+                                                                    )}
+                                                                </td>
+                                                            </tr>
+                                                        );
+                                                    }
+
+                                                    return filtered.map((session) => {
                                                         const workerId = session.workerId._id;
                                                         const isSelected = bagFormData.workers.includes(workerId);
                                                         const canSelect = isSelected || bagFormData.workers.length < 4;
-                                                        
+
                                                         return (
-                                                            <tr 
-                                                                key={session._id} 
-                                                                className={`hover:bg-gray-50 transition-colors ${
-                                                                    isSelected ? 'bg-gray-50' : ''
-                                                                }`}
+                                                            <tr
+                                                                key={session._id}
+                                                                className={`hover:bg-gray-50 transition-colors cursor-pointer ${isSelected ? 'bg-emerald-50' : ''}`}
+                                                                onClick={() => canSelect && handleWorkerToggle(workerId)}
                                                             >
                                                                 <td className="px-6 py-4">
                                                                     <input
@@ -901,14 +998,15 @@ export default function OperationsPage() {
                                                                         onChange={() => handleWorkerToggle(workerId)}
                                                                         disabled={!canSelect}
                                                                         className="w-4 h-4 text-gray-600 rounded focus:ring-gray-400 disabled:opacity-30 cursor-pointer"
+                                                                        onClick={(e) => e.stopPropagation()}
                                                                     />
                                                                 </td>
                                                                 <td className="px-6 py-4">
                                                                     <div className="flex items-center gap-3">
-                                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
-                                                                            isSelected 
-                                                                                ? 'bg-gray-200' 
-                                                                                : 'bg-gradient-to-br from-gray-400 to-gray-500'
+                                                                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                                                                            isSelected
+                                                                                ? 'bg-emerald-100 text-emerald-700'
+                                                                                : 'bg-gradient-to-br from-gray-400 to-gray-500 text-white'
                                                                         }`}>
                                                                             {session.workerId.fullName.charAt(0).toUpperCase()}
                                                                         </div>
@@ -936,64 +1034,10 @@ export default function OperationsPage() {
                                                                 </td>
                                                             </tr>
                                                         );
-                                                    })}
-                                                {sessions.filter(s => s.exporterId._id === bagFormData.exporterId).length === 0 && (
-                                                    <tr>
-                                                        <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
-                                                            <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                                                            <p>No workers currently assigned to {exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}</p>
-                                                            <p className="text-sm text-gray-400 mt-1">Assign workers in the "Assign Exporter" tab first</p>
-                                                        </td>
-                                                    </tr>
-                                                )}
+                                                    });
+                                                })()}
                                             </tbody>
                                         </table>
-                                    </div>
-
-                                    {/* Summary & Action */}
-                                    <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex-1 space-y-2">
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <CheckCircle2 className={`w-4 h-4 ${
-                                                        bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                            ? 'text-gray-600' 
-                                                            : 'text-gray-300'
-                                                    }`} />
-                                                    <span className={
-                                                        bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                            ? 'text-gray-600 font-medium' 
-                                                            : 'text-gray-500'
-                                                    }>
-                                                        {bagFormData.workers.length >= 2 && bagFormData.workers.length <= 4 
-                                                            ? 'Ready to record' 
-                                                            : '2-4 workers required'}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-4 text-sm text-gray-600">
-                                                    <span>• Exporter: <strong>{exporters.find(e => e._id === bagFormData.exporterId)?.companyTradingName}</strong></span>
-                                                    <span>• Weight: <strong>60kg</strong></span>
-                                                    <span>• Workers: <strong>{bagFormData.workers.length}</strong></span>
-                                                </div>
-                                            </div>
-                                            <button
-                                                onClick={handleRecordBag}
-                                                disabled={loading || bagFormData.workers.length < 2 || bagFormData.workers.length > 4}
-                                                className="px-8 py-3 bg-gray-800 text-white rounded-lg hover:bg-gray-900 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg  flex items-center gap-2"
-                                            >
-                                                {loading ? (
-                                                    <>
-                                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                                                        Recording...
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Package className="w-4 h-4" />
-                                                        Assign Bag
-                                                    </>
-                                                )}
-                                            </button>
-                                        </div>
                                     </div>
                                 </div>
                             ) : (

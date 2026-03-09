@@ -19,7 +19,6 @@ const SidebarProfile = dynamic(() => import('@/components/wrappers/SidebarProfil
 const navigation = [
     { name: 'Dashboard',       href: '/exporter/dashboard',        icon: LayoutDashboard },
     { name: 'Worker Requests', href: '/exporter/worker-requests',   icon: ClipboardList },
-    { name: 'Profile',         href: '/exporter/profile',           icon: User },
 ];
 
 export default function ExporterLayout({ children }: { children: ReactNode }) {

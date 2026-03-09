@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { X, Camera, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Camera, CameraOff, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 
 interface CheckInResult {
     workerName: string;
@@ -14,7 +14,7 @@ interface QrScannerModalProps {
     onCheckInSuccess: (result: CheckInResult) => void;
 }
 
-type ScanState = 'scanning' | 'processing' | 'success' | 'error';
+type ScanState = 'scanning' | 'processing' | 'success' | 'error' | 'no-camera';
 
 export function QrScannerModal({ onClose, onCheckInSuccess }: QrScannerModalProps) {
     const scannerRef = useRef<any>(null);
@@ -40,10 +40,19 @@ export function QrScannerModal({ onClose, onCheckInSuccess }: QrScannerModalProp
                     handleScan,
                     undefined // suppress errors during scanning
                 );
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Camera error:', err);
-                setScanState('error');
-                setMessage('Could not access camera. Please allow camera permission and try again.');
+                const msg = err?.message || err?.toString() || '';
+                if (msg.includes('NotAllowed') || msg.includes('Permission')) {
+                    setScanState('no-camera');
+                    setMessage('Camera permission was denied. Please allow camera access in your browser settings and try again.');
+                } else if (msg.includes('NotFound') || msg.includes('DevicesNotFound')) {
+                    setScanState('no-camera');
+                    setMessage('No camera found on this device.');
+                } else {
+                    setScanState('no-camera');
+                    setMessage('Could not access camera. Please check permissions and try again.');
+                }
             }
         };
 
@@ -192,6 +201,39 @@ export function QrScannerModal({ onClose, onCheckInSuccess }: QrScannerModalProp
                                     className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                                 >
                                     Done
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Camera Permission Denied */}
+                    {scanState === 'no-camera' && (
+                        <div className="flex flex-col items-center py-6 gap-4">
+                            <div className="w-16 h-16 bg-amber-100 dark:bg-amber-900/30 rounded-full flex items-center justify-center">
+                                <CameraOff className="w-9 h-9 text-amber-500" />
+                            </div>
+                            <div className="text-center">
+                                <p className="font-semibold text-gray-900 dark:text-gray-100">Camera Access Required</p>
+                                <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 leading-relaxed">{message}</p>
+                                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-left text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                                    <p className="font-medium text-gray-700 dark:text-gray-300">How to fix:</p>
+                                    <p>1. Click the lock/camera icon in the address bar</p>
+                                    <p>2. Set Camera to "Allow"</p>
+                                    <p>3. Reload the page and try again</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 w-full mt-2">
+                                <button
+                                    onClick={handleScanAnother}
+                                    className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium text-sm transition-colors"
+                                >
+                                    Retry Camera
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="flex-1 py-2.5 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl font-medium text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+                                >
+                                    Close
                                 </button>
                             </div>
                         </div>

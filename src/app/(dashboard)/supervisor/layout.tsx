@@ -23,7 +23,6 @@ const navigation = [
     { name: 'Daily Operations', href: '/supervisor/operations', icon: SettingsIcon },
     { name: 'Workers', href: '/supervisor/workers', icon: Users },
     { name: 'Onboarding', href: '/supervisor/onboarding', icon: UserPlus },
-    { name: 'Profile', href: '/supervisor/profile', icon: User },
 ];
 
 export default function SupervisorLayout({ children }: { children: ReactNode }) {

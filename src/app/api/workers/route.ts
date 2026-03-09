@@ -126,15 +126,30 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        // Generate unique worker ID
-        const workerId = generateWorkerId();
-        console.log('[Workers API] Generated worker ID:', workerId);
+        // Use provided national ID, or auto-generate one if blank
+        let workerId: string;
+        if (body.workerId && String(body.workerId).trim()) {
+            workerId = String(body.workerId).trim().toUpperCase();
+            // Ensure this national ID is not already registered
+            const existing = await WorkerModel.findOne({ workerId });
+            if (existing) {
+                return NextResponse.json(
+                    { error: 'A worker with this National ID is already registered' },
+                    { status: 409 }
+                );
+            }
+        } else {
+            workerId = generateWorkerId();
+        }
+        console.log('[Workers API] Worker ID:', workerId);
 
         // Clean up empty string values for optional ObjectId fields
         const cleanedBody = { ...body };
         if (cleanedBody.facilityId === '' || cleanedBody.facilityId === null) {
             delete cleanedBody.facilityId;
         }
+        // Remove workerId from body so we use our resolved value
+        delete cleanedBody.workerId;
 
         const worker = await WorkerModel.create({
             ...cleanedBody,

@@ -17,7 +17,7 @@ export async function GET(
         await dbConnect();
         const { id } = await params;
 
-        const worker = await WorkerModel.findById(id).select('fullName workerId qrToken status photo');
+        const worker = await WorkerModel.findById(id).select('fullName workerId qrToken status photo phone');
         if (!worker) {
             return NextResponse.json({ error: 'Worker not found' }, { status: 404 });
         }
@@ -32,6 +32,7 @@ export async function GET(
             qrToken: worker.qrToken,
             workerName: worker.fullName,
             workerId: worker.workerId,
+            phone: worker.phone,
             status: worker.status,
             photo: worker.photo,
         });
