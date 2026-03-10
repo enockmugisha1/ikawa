@@ -60,6 +60,50 @@ export async function sendOtpEmail(to: string, otp: string, name: string) {
     });
 }
 
+export async function sendWelcomeEmail(
+    to: string,
+    name: string,
+    tempPassword: string,
+    role: string
+) {
+    const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+    const loginUrl = process.env.NEXT_PUBLIC_APP_URL
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
+        : '/login';
+
+    return sendEmail({
+        to,
+        subject: `CWMS – Your ${roleLabel} Account Has Been Created`,
+        html: `
+            <div style="font-family:Arial,sans-serif;max-width:480px;margin:0 auto;padding:24px;border:1px solid #e5e7eb;border-radius:12px;">
+                <div style="background:#065f46;color:white;padding:16px;border-radius:8px;text-align:center;margin-bottom:20px;">
+                    <h2 style="margin:0;">CWMS</h2>
+                    <p style="margin:4px 0 0;font-size:12px;opacity:0.85;">Coffee Worker Management System</p>
+                </div>
+                <p>Hello <strong>${name}</strong>,</p>
+                <p>An administrator has created a <strong>${roleLabel}</strong> account for you on the Coffee Worker Management System.</p>
+                <p>Use the credentials below to log in:</p>
+                <div style="background:#f0fdf4;border:1px solid #d1fae5;border-radius:8px;padding:16px;margin:20px 0;">
+                    <p style="margin:0 0 8px;font-size:14px;color:#374151;"><strong>Email:</strong> ${to}</p>
+                    <p style="margin:0 0 8px;font-size:14px;color:#374151;"><strong>Temporary Password:</strong></p>
+                    <div style="background:white;border:2px solid #065f46;border-radius:6px;padding:10px 16px;text-align:center;font-family:monospace;font-size:18px;font-weight:bold;color:#065f46;letter-spacing:2px;">
+                        ${tempPassword}
+                    </div>
+                </div>
+                <p style="color:#dc2626;font-size:14px;font-weight:600;">Please change your password after your first login using the "Forgot Password" option.</p>
+                <div style="text-align:center;margin:20px 0;">
+                    <a href="${loginUrl}" style="display:inline-block;background:#065f46;color:white;padding:12px 32px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+                        Log In Now
+                    </a>
+                </div>
+                <p style="color:#6b7280;font-size:13px;margin-top:16px;border-top:1px solid #e5e7eb;padding-top:12px;">
+                    If you did not expect this email, please contact your system administrator.
+                </p>
+            </div>
+        `,
+    });
+}
+
 export async function sendQrBadgeEmail(
     to: string,
     workerName: string,

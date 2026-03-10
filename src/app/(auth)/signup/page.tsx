@@ -1,27 +1,46 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 
 export default function SignupPage() {
-    const router = useRouter();
     const [formData, setFormData] = useState({
         name: '',
         email: '',
         password: '',
         confirmPassword: '',
         phone: '',
-        role: 'supervisor' as 'supervisor' | 'admin' | 'exporter',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [checking, setChecking] = useState(true);
+    const [needsSetup, setNeedsSetup] = useState(false);
+
+    useEffect(() => {
+        checkSetup();
+    }, []);
+
+    const checkSetup = async () => {
+        try {
+            const res = await fetch('/api/auth/register');
+            const data = await res.json();
+            if (data.needsSetup) {
+                setNeedsSetup(true);
+            } else {
+                // Admin already exists - redirect to login
+                window.location.href = '/login';
+            }
+        } catch {
+            window.location.href = '/login';
+        } finally {
+            setChecking(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
 
-        // Validation
         if (formData.password !== formData.confirmPassword) {
             setError('Passwords do not match');
             toast.error('Passwords do not match');
@@ -45,33 +64,43 @@ export default function SignupPage() {
                     email: formData.email,
                     password: formData.password,
                     phone: formData.phone,
-                    role: formData.role,
                 }),
             });
 
             const data = await res.json();
 
             if (!res.ok) {
-                throw new Error(data.error || 'Registration failed');
+                throw new Error(data.error || 'Setup failed');
             }
 
-            console.log('[Signup] Registration successful, redirectUrl:', data.redirectUrl);
-            toast.success('Account created successfully! Redirecting...');
+            toast.success('Admin account created! Redirecting...');
 
-            // Use window.location.href for full page reload to ensure cookie is picked up
-            const redirectUrl = data.redirectUrl || `/${formData.role}/dashboard`;
-            console.log('[Signup] Redirecting to:', redirectUrl);
-            
             setTimeout(() => {
-                window.location.href = redirectUrl;
+                window.location.href = data.redirectUrl || '/admin/dashboard';
             }, 500);
-        } catch (error) {
-            setError(error instanceof Error ? error.message : 'Registration failed');
-            toast.error(error instanceof Error ? error.message : 'Registration failed');
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : 'Setup failed';
+            setError(msg);
+            toast.error(msg);
         } finally {
             setLoading(false);
         }
     };
+
+    if (checking) {
+        return (
+            <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600 mx-auto mb-4"></div>
+                    <p className="text-gray-600">Checking system status...</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!needsSetup) {
+        return null;
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-teal-50 flex items-center justify-center p-4">
@@ -84,17 +113,31 @@ export default function SignupPage() {
                         <span className="text-white text-3xl font-bold">C</span>
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                        Create Account
+                        Initial Admin Setup
                     </h1>
                     <p className="text-gray-600">
-                        Join the Casual Worker Management System
+                        Create the first administrator account for CWMS
                     </p>
                 </div>
 
-                {/* Signup Form Card */}
+                {/* Info Banner */}
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+                    <div className="flex items-start gap-3">
+                        <svg className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                        </svg>
+                        <div className="text-sm text-blue-800">
+                            <p className="font-medium mb-1">First-Time Setup</p>
+                            <p className="text-blue-700">
+                                This page is only available because no admin account exists yet. After creating the admin account, all other users (supervisors, exporters) will be created from the admin dashboard.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Setup Form Card */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
                     <form onSubmit={handleSubmit} className="space-y-5">
-                        {/* Name */}
                         <div>
                             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
                                 Full Name
@@ -110,7 +153,6 @@ export default function SignupPage() {
                             />
                         </div>
 
-                        {/* Email */}
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                                 Email Address
@@ -122,11 +164,10 @@ export default function SignupPage() {
                                 value={formData.email}
                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all bg-white text-gray-900"
-                                placeholder="you@example.com"
+                                placeholder="admin@example.com"
                             />
                         </div>
 
-                        {/* Phone */}
                         <div>
                             <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
                                 Phone Number
@@ -142,29 +183,6 @@ export default function SignupPage() {
                             />
                         </div>
 
-                        {/* Role Selection */}
-                        <div>
-                            <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-2">
-                                Role
-                            </label>
-                            <select
-                                id="role"
-                                value={formData.role}
-                                onChange={(e) => setFormData({ ...formData, role: e.target.value as any })}
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all bg-white"
-                            >
-                                <option value="supervisor">Supervisor - Daily Operations</option>
-                                <option value="admin">Admin - System Management</option>
-                                <option value="exporter">Exporter - View Reports</option>
-                            </select>
-                            <p className="mt-1 text-xs text-gray-500">
-                                {formData.role === 'supervisor' && 'Manage daily check-ins, assignments, and bag recording'}
-                                {formData.role === 'admin' && 'Full system access and configuration'}
-                                {formData.role === 'exporter' && 'Read-only access to your processing data'}
-                            </p>
-                        </div>
-
-                        {/* Password */}
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
@@ -180,7 +198,6 @@ export default function SignupPage() {
                             />
                         </div>
 
-                        {/* Confirm Password */}
                         <div>
                             <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
                                 Confirm Password
@@ -196,14 +213,22 @@ export default function SignupPage() {
                             />
                         </div>
 
-                        {/* Error Display */}
                         {error && (
                             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                                 {error}
                             </div>
                         )}
 
-                        {/* Submit Button */}
+                        {/* Role indicator */}
+                        <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-3">
+                            <p className="text-sm text-emerald-800 font-medium">
+                                Role: Administrator
+                            </p>
+                            <p className="text-xs text-emerald-600 mt-0.5">
+                                Full system access. You will manage supervisors, exporters, and workers from the admin dashboard.
+                            </p>
+                        </div>
+
                         <button
                             type="submit"
                             disabled={loading}
@@ -211,30 +236,20 @@ export default function SignupPage() {
                         >
                             {loading ? (
                                 <span className="flex items-center justify-center">
-                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
                                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                     </svg>
-                                    Creating account...
+                                    Setting up...
                                 </span>
                             ) : (
-                                'Create Account'
+                                'Create Admin Account'
                             )}
                         </button>
                     </form>
-
-                    {/* Login Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Already have an account?{' '}
-                            <a href="/login" className="text-emerald-600 hover:text-emerald-700 font-medium">
-                                Sign in
-                            </a>
-                        </p>
-                    </div>
                 </div>
 
-                {/* Footer Info */}
+                {/* Footer */}
                 <div className="mt-6 text-center text-xs text-gray-500">
                     <p>For NAEB Coffee Sorting Facilities</p>
                     <p className="mt-1">Powered by Iwacu Cooperative</p>

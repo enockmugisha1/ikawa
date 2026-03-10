@@ -13,6 +13,7 @@ import {
     Coffee,
     GitBranch,
     ClipboardList,
+    Shield,
 } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
@@ -22,6 +23,7 @@ const SidebarProfile = dynamic(() => import('@/components/wrappers/SidebarProfil
 const navigation = [
     { name: 'Dashboard',       href: '/admin/dashboard',        icon: LayoutDashboard },
     { name: 'Workers',         href: '/admin/workers',           icon: Users },
+    { name: 'Supervisors',     href: '/admin/supervisors',       icon: Shield },
     { name: 'Exporters',       href: '/admin/exporters',         icon: Building2 },
     { name: 'Cooperatives',    href: '/admin/cooperatives',      icon: GitBranch },
     { name: 'Worker Requests', href: '/admin/worker-requests',   icon: ClipboardList },

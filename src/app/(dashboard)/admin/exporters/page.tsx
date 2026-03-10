@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import {
     Building2, MapPin, User, Phone, Mail,
-    Plus, Search, RefreshCw, Edit2, Power, PowerOff, X, Hash,
+    Plus, Search, RefreshCw, Edit2, Power, PowerOff, X, Hash, KeyRound,
 } from 'lucide-react';
 
 interface Exporter {
@@ -82,8 +82,13 @@ export default function AdminExportersPage() {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ ...formData, isActive: true }),
                 });
-                if (!res.ok) throw new Error('Add failed');
-                toast.success('Exporter added successfully');
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Add failed');
+                if (data.userCreated) {
+                    toast.success(`Exporter added! Login credentials sent to ${formData.email}`, { duration: 5000 });
+                } else {
+                    toast.success('Exporter added successfully');
+                }
             }
             closeForm();
             fetchExporters();
@@ -104,6 +109,22 @@ export default function AdminExportersPage() {
             fetchExporters();
         } catch {
             toast.error('Failed to update status');
+        }
+    };
+
+    const handleResetPassword = async (exporter: Exporter) => {
+        if (!confirm(`Reset password for ${exporter.contactPerson} (${exporter.email})?`)) return;
+        try {
+            const res = await fetch('/api/admin/resend-credentials', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email: exporter.email }),
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Failed to reset password');
+            toast.success(data.message || 'New credentials sent!');
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : 'Failed to reset password');
         }
     };
 
@@ -306,6 +327,13 @@ export default function AdminExportersPage() {
                                                     title="Edit"
                                                 >
                                                     <Edit2 className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleResetPassword(exp)}
+                                                    className="p-1.5 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors"
+                                                    title="Reset Password"
+                                                >
+                                                    <KeyRound className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleToggleStatus(exp)}

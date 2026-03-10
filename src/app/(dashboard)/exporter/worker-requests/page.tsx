@@ -14,7 +14,6 @@ import {
     AlertCircle,
     RefreshCw,
     Container,
-    Layers,
     CheckSquare
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
@@ -57,8 +56,6 @@ export default function ExporterWorkerRequestsPage() {
     const [requests, setRequests] = useState<WorkerRequest[]>([]);
     const [loading, setLoading] = useState(true);
     const [notLinked, setNotLinked] = useState(false);
-    const [linkCode, setLinkCode] = useState('');
-    const [linking, setLinking] = useState(false);
     const [showForm, setShowForm] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [formData, setFormData] = useState(defaultForm);
@@ -79,28 +76,6 @@ export default function ExporterWorkerRequestsPage() {
             toast.error('Failed to load requests');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleLink = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setLinking(true);
-        try {
-            const res = await fetch('/api/exporters/link', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ exporterCode: linkCode }),
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Link failed');
-            toast.success(`Linked to ${data.exporter.companyTradingName}!`);
-            setNotLinked(false);
-            setLinkCode('');
-            fetchRequests();
-        } catch (err: any) {
-            toast.error(err.message || 'Failed to link account');
-        } finally {
-            setLinking(false);
         }
     };
 
@@ -164,7 +139,7 @@ export default function ExporterWorkerRequestsPage() {
         <div className="space-y-6">
             <Toaster position="top-right" />
 
-            {/* Not-linked setup banner */}
+            {/* Not-linked info banner */}
             {notLinked && (
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
                     <div className="flex flex-col sm:flex-row gap-4 sm:items-start">
@@ -173,26 +148,9 @@ export default function ExporterWorkerRequestsPage() {
                         </div>
                         <div className="flex-1">
                             <h3 className="font-semibold text-amber-900 text-lg mb-1">Account Not Linked</h3>
-                            <p className="text-amber-700 text-sm mb-4">
-                                Your account is not yet linked to an exporter profile. Enter your <strong>Exporter Code</strong> (provided by the administrator) to link your account and start submitting requests.
+                            <p className="text-amber-700 text-sm">
+                                Your account is not yet linked to an exporter profile. Please contact the system administrator to have your account linked.
                             </p>
-                            <form onSubmit={handleLink} className="flex flex-col sm:flex-row gap-2 max-w-sm">
-                                <input
-                                    type="text"
-                                    value={linkCode}
-                                    onChange={e => setLinkCode(e.target.value.toUpperCase())}
-                                    placeholder="e.g. EXP001"
-                                    required
-                                    className="flex-1 px-3 py-2 border border-amber-300 rounded-lg text-sm focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white font-mono uppercase"
-                                />
-                                <button
-                                    type="submit"
-                                    disabled={linking || !linkCode}
-                                    className="px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-semibold hover:bg-amber-700 disabled:opacity-50 transition-colors"
-                                >
-                                    {linking ? 'Linking...' : 'Link Account'}
-                                </button>
-                            </form>
                         </div>
                     </div>
                 </div>
