@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
 import {
     Building2, MapPin, User, Phone, Mail,
-    Plus, Search, RefreshCw, Edit2, Power, PowerOff, X, Hash, KeyRound,
+    Plus, Search, RefreshCw, Edit2, Power, PowerOff, X, Hash, KeyRound, DollarSign,
 } from 'lucide-react';
 
 interface Exporter {
@@ -19,6 +19,14 @@ interface Exporter {
     isActive: boolean;
 }
 
+interface RateCard {
+    _id: string;
+    exporterId: string | { _id: string; companyTradingName: string };
+    ratePerBag: number;
+    isActive: boolean;
+    effectiveFrom: string;
+}
+
 const emptyForm = {
     exporterCode: '',
     tinNumber: '',
@@ -31,14 +39,18 @@ const emptyForm = {
 
 export default function AdminExportersPage() {
     const [exporters, setExporters] = useState<Exporter[]>([]);
+    const [rateCards, setRateCards] = useState<Record<string, RateCard>>({});
     const [loading, setLoading] = useState(true);
     const [showAddForm, setShowAddForm] = useState(false);
     const [editingExporter, setEditingExporter] = useState<Exporter | null>(null);
     const [formData, setFormData] = useState(emptyForm);
     const [searchTerm, setSearchTerm] = useState('');
     const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+    const [showRateModal, setShowRateModal] = useState(false);
+    const [rateExporter, setRateExporter] = useState<Exporter | null>(null);
+    const [ratePerBag, setRatePerBag] = useState('');
 
-    useEffect(() => { fetchExporters(); }, []);
+    useEffect(() => { fetchExporters(); fetchRateCards(); }, []);
 
     const fetchExporters = async () => {
         try {
@@ -50,6 +62,48 @@ export default function AdminExportersPage() {
             toast.error('Failed to load exporters');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchRateCards = async () => {
+        try {
+            const res = await fetch('/api/rate-cards');
+            const data = await res.json();
+            const cards: Record<string, RateCard> = {};
+            (data.rateCards || []).forEach((rc: RateCard) => {
+                if (rc.isActive) {
+                    const eid = typeof rc.exporterId === 'string' ? rc.exporterId : rc.exporterId._id;
+                    cards[eid] = rc;
+                }
+            });
+            setRateCards(cards);
+        } catch {
+            // silently fail
+        }
+    };
+
+    const openRateModal = (exp: Exporter) => {
+        setRateExporter(exp);
+        setRatePerBag(rateCards[exp._id]?.ratePerBag?.toString() || '');
+        setShowRateModal(true);
+    };
+
+    const handleSetRate = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!rateExporter) return;
+        try {
+            const res = await fetch('/api/rate-cards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ exporterId: rateExporter._id, ratePerBag: Number(ratePerBag) }),
+            });
+            if (!res.ok) throw new Error('Failed to set rate');
+            toast.success(`Rate set to FRw ${ratePerBag}/bag for ${rateExporter.companyTradingName}`);
+            setShowRateModal(false);
+            setRateExporter(null);
+            fetchRateCards();
+        } catch {
+            toast.error('Failed to set rate');
         }
     };
 
@@ -263,6 +317,7 @@ export default function AdminExportersPage() {
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Exporter</th>
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden md:table-cell">Contact</th>
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider hidden lg:table-cell">Address</th>
+                                    <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rate/Bag</th>
                                     <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-4 sm:px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -310,6 +365,27 @@ export default function AdminExportersPage() {
                                             </div>
                                         </td>
                                         <td className="px-4 sm:px-6 py-4">
+                                            {rateCards[exp._id] ? (
+                                                <button
+                                                    onClick={() => openRateModal(exp)}
+                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors cursor-pointer"
+                                                    title="Click to update rate"
+                                                >
+                                                    <DollarSign className="w-3 h-3" />
+                                                    FRw {rateCards[exp._id].ratePerBag.toLocaleString()}
+                                                </button>
+                                            ) : (
+                                                <button
+                                                    onClick={() => openRateModal(exp)}
+                                                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors cursor-pointer"
+                                                    title="Set rate per bag"
+                                                >
+                                                    <DollarSign className="w-3 h-3" />
+                                                    Set Rate
+                                                </button>
+                                            )}
+                                        </td>
+                                        <td className="px-4 sm:px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                 exp.isActive
                                                     ? 'bg-green-100 text-green-700'
@@ -355,6 +431,60 @@ export default function AdminExportersPage() {
                     </div>
                 )}
             </div>
+
+            {/* Set Rate Modal */}
+            {showRateModal && rateExporter && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-gray-100">
+                        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900">Set Rate Per Bag</h2>
+                                <p className="text-sm text-gray-500 mt-0.5">{rateExporter.companyTradingName}</p>
+                            </div>
+                            <button onClick={() => { setShowRateModal(false); setRateExporter(null); }} className="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <X className="w-5 h-5 text-gray-500" />
+                            </button>
+                        </div>
+                        <form onSubmit={handleSetRate} className="p-6 space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                    <span className="flex items-center gap-1.5"><DollarSign className="w-3.5 h-3.5 text-emerald-600" />Rate Per Bag (FRw)</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    required
+                                    min="0"
+                                    step="1"
+                                    value={ratePerBag}
+                                    onChange={e => setRatePerBag(e.target.value)}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent text-sm"
+                                    placeholder="e.g. 150"
+                                />
+                                {rateCards[rateExporter._id] && (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                        Current rate: FRw {rateCards[rateExporter._id].ratePerBag.toLocaleString()}/bag
+                                    </p>
+                                )}
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="submit"
+                                    className="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors text-sm"
+                                >
+                                    Save Rate
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => { setShowRateModal(false); setRateExporter(null); }}
+                                    className="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-semibold hover:bg-gray-200 transition-colors text-sm"
+                                >
+                                    Cancel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
 
             {/* Add / Edit Modal */}
             {showAddForm && (
