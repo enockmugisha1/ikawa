@@ -114,9 +114,24 @@ export async function POST() {
             isActive: true,
         });
 
-        // Create Rate Card
+        // Create Rate Cards (one per exporter)
         await RateCardModel.create({
+            exporterId: exporter1._id,
             ratePerBag: 1000,
+            effectiveFrom: new Date('2026-01-01'),
+            isActive: true,
+            createdBy: adminUser._id,
+        });
+        await RateCardModel.create({
+            exporterId: exporter2._id,
+            ratePerBag: 1200,
+            effectiveFrom: new Date('2026-01-01'),
+            isActive: true,
+            createdBy: adminUser._id,
+        });
+        await RateCardModel.create({
+            exporterId: exporter3._id,
+            ratePerBag: 900,
             effectiveFrom: new Date('2026-01-01'),
             isActive: true,
             createdBy: adminUser._id,
@@ -165,72 +180,111 @@ export async function POST() {
             workers.push(worker);
         }
 
-        // Create Attendance Records (10 workers checked in today)
+        // Create historical data for the last 30 days
         const today = new Date();
-        const attendanceRecords: any[] = [];
-        for (let i = 0; i < 10; i++) {
-            const checkInTime = new Date(today);
-            checkInTime.setHours(7 + Math.floor(i / 3), (i * 15) % 60, 0, 0);
+        const exporters = [exporter1, exporter2, exporter3];
+        const allSessions: any[] = [];
+        const allAttendance: any[] = [];
+        const allBags: any[] = [];
 
-            const checkOutTime = i >= 8 ? new Date(today.getTime()) : undefined;
-            if (checkOutTime) {
-                checkOutTime.setHours(16, 0, 0, 0);
-            }
+        for (let dayOffset = 30; dayOffset >= 0; dayOffset--) {
+            const date = new Date(today);
+            date.setDate(date.getDate() - dayOffset);
+            date.setHours(0, 0, 0, 0);
 
-            const attendance = await AttendanceModel.create({
-                workerId: workers[i]._id,
-                facilityId: facility._id,
-                date: today,
-                checkInTime: checkInTime,
-                status: i < 8 ? 'on-site' : 'checked-out',
-                ...(checkOutTime && { checkOutTime }),
-                supervisorId: supervisorUser._id,
-            });
-            attendanceRecords.push(attendance);
-        }
+            // Skip weekends randomly (some weekends have work)
+            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+            if (isWeekend && Math.random() > 0.3) continue;
 
-        // Create Active Sessions (6 workers in active sessions)
-        const sessions: any[] = [];
-        for (let i = 0; i < 6; i++) {
-            const startTime = new Date(today);
-            startTime.setHours(8 + Math.floor(i / 2), (i * 20) % 60, 0, 0);
+            // Random number of workers active each day (6-12)
+            const activeWorkerCount = Math.min(workers.length, 6 + Math.floor(Math.random() * 7));
+            const dayWorkers = [...workers].sort(() => Math.random() - 0.5).slice(0, activeWorkerCount);
 
-            const session = await SessionModel.create({
-                attendanceId: attendanceRecords[i]._id,
-                workerId: workers[i]._id,
-                exporterId: i % 3 === 0 ? exporter1._id : i % 3 === 1 ? exporter2._id : exporter3._id,
-                facilityId: facility._id,
-                date: today,
-                startTime: startTime,
-                status: 'active',
-                supervisorId: supervisorUser._id,
-            });
-            sessions.push(session);
-        }
+            // Create attendance for the day
+            const dayAttendance: any[] = [];
+            for (const worker of dayWorkers) {
+                const checkInTime = new Date(date);
+                checkInTime.setHours(6 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0, 0);
 
-        // Create Bags (3 bags completed today)
-        const bags: any[] = [];
-        for (let i = 0; i < 3; i++) {
-            // Each bag has 3 workers (using sessions 0-2, 3-5, etc.)
-            const bagWorkers = sessions.slice(i * 2, i * 2 + 3).map(session => ({
-                workerId: session.workerId,
-                sessionId: session._id,
-            }));
+                const checkOutTime = new Date(date);
+                checkOutTime.setHours(15 + Math.floor(Math.random() * 3), Math.floor(Math.random() * 60), 0, 0);
 
-            if (bagWorkers.length >= 2) { // At least 2 workers required
-                const bag = await BagModel.create({
-                    bagNumber: generateBagNumber(),
-                    exporterId: sessions[i * 2]?.exporterId,
+                const isToday = dayOffset === 0;
+                const attendance = await AttendanceModel.create({
+                    workerId: worker._id,
                     facilityId: facility._id,
-                    date: today,
-                    weight: 60,
-                    workers: bagWorkers,
-                    status: 'completed',
+                    date: date,
+                    checkInTime: checkInTime,
+                    status: isToday ? 'on-site' : 'checked-out',
+                    ...(!isToday && { checkOutTime }),
                     supervisorId: supervisorUser._id,
                 });
-                bags.push(bag);
+                dayAttendance.push(attendance);
+                allAttendance.push(attendance);
+            }
+
+            // Create sessions - assign workers to exporters
+            const daySessions: any[] = [];
+            for (let i = 0; i < dayWorkers.length; i++) {
+                const exporter = exporters[i % 3];
+                const startTime = new Date(date);
+                startTime.setHours(7 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0, 0);
+
+                const endTime = new Date(date);
+                endTime.setHours(15 + Math.floor(Math.random() * 2), Math.floor(Math.random() * 60), 0, 0);
+
+                const isToday = dayOffset === 0;
+                const session = await SessionModel.create({
+                    attendanceId: dayAttendance[i]._id,
+                    workerId: dayWorkers[i]._id,
+                    exporterId: exporter._id,
+                    facilityId: facility._id,
+                    date: date,
+                    startTime: startTime,
+                    ...(!isToday && { endTime }),
+                    status: isToday ? 'active' : 'closed',
+                    supervisorId: supervisorUser._id,
+                });
+                daySessions.push(session);
+                allSessions.push(session);
+            }
+
+            // Create bags - group workers by exporter, then create bags with 2-3 workers each
+            for (const exporter of exporters) {
+                const exporterSessions = daySessions.filter(
+                    (s: any) => s.exporterId.toString() === exporter._id.toString()
+                );
+
+                // Create bags from available workers (2-3 workers per bag)
+                let idx = 0;
+                while (idx + 1 < exporterSessions.length) {
+                    const workerCount = Math.min(2 + Math.floor(Math.random() * 2), exporterSessions.length - idx);
+                    if (workerCount < 2) break;
+
+                    const bagWorkers = exporterSessions.slice(idx, idx + workerCount).map((s: any) => ({
+                        workerId: s.workerId,
+                        sessionId: s._id,
+                    }));
+
+                    const weight = 55 + Math.floor(Math.random() * 15); // 55-69 kg
+                    const bag = await BagModel.create({
+                        bagNumber: generateBagNumber(),
+                        exporterId: exporter._id,
+                        facilityId: facility._id,
+                        date: date,
+                        weight,
+                        workers: bagWorkers,
+                        status: 'completed',
+                        supervisorId: supervisorUser._id,
+                    });
+                    allBags.push(bag);
+                    idx += workerCount;
+                }
             }
         }
+
+        const bags = allBags;
+        const sessions = allSessions;
 
         return NextResponse.json({
             success: true,
@@ -254,7 +308,7 @@ export async function POST() {
                 facility: facility.name,
                 exporters: [exporter1.companyTradingName, exporter2.companyTradingName, exporter3.companyTradingName],
                 workers: workers.length,
-                todayAttendance: attendanceRecords.length,
+                todayAttendance: allAttendance.length,
                 activeSessions: sessions.length,
                 bagsProcessed: bags.length,
             },
