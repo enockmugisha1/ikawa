@@ -388,10 +388,10 @@ export default function AdminExportersPage() {
                                         <td className="px-4 sm:px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                 exp.isActive
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-gray-100 text-gray-500'
+                                                    ? 'bg-emerald-600 text-white'
+                                                    : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
                                             }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${exp.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${exp.isActive ? 'bg-white' : 'bg-gray-400'}`}></span>
                                                 {exp.isActive ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>

@@ -301,10 +301,10 @@ export default function AdminSupervisorsPage() {
                                         <td className="px-4 sm:px-6 py-4">
                                             <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold ${
                                                 sup.isActive
-                                                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-500'
+                                                    ? 'bg-emerald-600 text-white'
+                                                    : 'bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400'
                                             }`}>
-                                                <span className={`w-1.5 h-1.5 rounded-full ${sup.isActive ? 'bg-green-500' : 'bg-gray-400'}`}></span>
+                                                <span className={`w-1.5 h-1.5 rounded-full ${sup.isActive ? 'bg-white' : 'bg-gray-400'}`}></span>
                                                 {sup.isActive ? 'Active' : 'Inactive'}
                                             </span>
                                         </td>
