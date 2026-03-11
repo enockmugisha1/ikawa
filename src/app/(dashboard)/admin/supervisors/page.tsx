@@ -312,7 +312,7 @@ export default function AdminSupervisorsPage() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => handleResendCredentials(sup)}
-                                                    className="p-1.5 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 dark:bg-amber-900/30 dark:hover:bg-amber-900/50 transition-colors"
+                                                    className="p-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 dark:bg-amber-900/40 dark:text-amber-400 dark:hover:bg-amber-900/60 transition-colors"
                                                     title="Reset Password"
                                                 >
                                                     <KeyRound className="w-3.5 h-3.5" />
@@ -321,8 +321,8 @@ export default function AdminSupervisorsPage() {
                                                     onClick={() => handleToggleStatus(sup)}
                                                     className={`p-1.5 rounded-lg transition-colors ${
                                                         sup.isActive
-                                                            ? 'bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50'
-                                                            : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50'
+                                                            ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-900/60'
+                                                            : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400 dark:hover:bg-green-900/60'
                                                     }`}
                                                     title={sup.isActive ? 'Deactivate' : 'Activate'}
                                                 >

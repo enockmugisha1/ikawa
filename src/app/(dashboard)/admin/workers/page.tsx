@@ -313,7 +313,7 @@ export default function AdminWorkersPage() {
                                             <div className="flex items-center gap-2">
                                                 <button
                                                     onClick={() => handleEditWorker(worker)}
-                                                    className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 transition-colors text-xs font-medium"
+                                                    className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 dark:bg-blue-900/40 dark:text-blue-400 dark:hover:bg-blue-900/60 transition-colors text-xs font-medium"
                                                 >
                                                     Edit
                                                 </button>
@@ -321,8 +321,8 @@ export default function AdminWorkersPage() {
                                                     onClick={() => handleToggleStatus(worker)}
                                                     className={`px-3 py-1.5 rounded-lg transition-colors text-xs font-medium ${
                                                         worker.status === 'active'
-                                                            ? 'bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/30 dark:hover:bg-red-900/50'
-                                                            : 'bg-green-50 text-green-600 hover:bg-green-100 dark:bg-green-900/30 dark:hover:bg-green-900/50'
+                                                            ? 'bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900/40 dark:text-red-400 dark:hover:bg-red-900/60'
+                                                            : 'bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/40 dark:text-green-400 dark:hover:bg-green-900/60'
                                                     }`}
                                                 >
                                                     {worker.status === 'active' ? 'Deactivate' : 'Activate'}

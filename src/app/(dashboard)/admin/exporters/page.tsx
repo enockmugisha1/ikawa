@@ -399,14 +399,14 @@ export default function AdminExportersPage() {
                                             <div className="flex items-center justify-end gap-2">
                                                 <button
                                                     onClick={() => openEdit(exp)}
-                                                    className="p-1.5 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 transition-colors"
+                                                    className="p-1.5 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Edit2 className="w-3.5 h-3.5" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleResetPassword(exp)}
-                                                    className="p-1.5 rounded-lg bg-amber-50 text-amber-600 hover:bg-amber-100 transition-colors"
+                                                    className="p-1.5 rounded-lg bg-amber-100 text-amber-700 hover:bg-amber-200 transition-colors"
                                                     title="Reset Password"
                                                 >
                                                     <KeyRound className="w-3.5 h-3.5" />
@@ -415,8 +415,8 @@ export default function AdminExportersPage() {
                                                     onClick={() => handleToggleStatus(exp)}
                                                     className={`p-1.5 rounded-lg transition-colors ${
                                                         exp.isActive
-                                                            ? 'bg-red-50 text-red-500 hover:bg-red-100'
-                                                            : 'bg-green-50 text-green-600 hover:bg-green-100'
+                                                            ? 'bg-red-100 text-red-700 hover:bg-red-200'
+                                                            : 'bg-green-100 text-green-700 hover:bg-green-200'
                                                     }`}
                                                     title={exp.isActive ? 'Deactivate' : 'Activate'}
                                                 >

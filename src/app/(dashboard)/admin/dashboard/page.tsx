@@ -15,7 +15,6 @@ import {
     RefreshCw,
     UserCheck,
     BarChart3,
-    Info,
     ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
@@ -453,57 +452,6 @@ export default function AdminDashboard() {
                             </Link>
                         );
                     })}
-                </div>
-            </div>
-
-            {/* System Overview + Operational Excellence */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* System Stats */}
-                <div className="bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border border-gray-200 dark:border-gray-700/50 p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4 flex items-center gap-2">
-                        <BarChart3 className="w-5 h-5 text-gray-500" />
-                        System Overview
-                    </h3>
-                    <div className="space-y-3">
-                        {[
-                            { label: 'Total Bags (All Time)', value: (analytics?.totalBags || 0).toLocaleString(), color: 'text-purple-600' },
-                            { label: 'Total Weight (kg)', value: (analytics?.totalKilograms || 0).toLocaleString(), color: 'text-blue-600' },
-                            { label: 'Bags Last 7 Days', value: analytics?.bagsLast7Days || 0, color: 'text-emerald-600' },
-                            { label: 'Bags Last 30 Days', value: analytics?.bagsLast30Days || 0, color: 'text-amber-600' },
-                            { label: 'Exporters Active Today', value: analytics?.exportersServedToday || 0, color: 'text-indigo-600' },
-                            { label: 'Total Facilities', value: analytics?.totalFacilities || 0, color: 'text-teal-600' },
-                        ].map((item) => (
-                            <div key={item.label} className="flex items-center justify-between py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
-                                <span className="text-sm text-gray-600 dark:text-gray-400">{item.label}</span>
-                                <span className={`text-sm font-bold ${item.color}`}>{item.value}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Operational Excellence */}
-                <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700/50 p-6">
-                    <div className="flex items-center gap-3 mb-5">
-                        <div className="w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
-                            <Info className="w-5 h-5 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 dark:text-white">Operational Excellence</h3>
-                    </div>
-                    <ol className="space-y-3">
-                        {[
-                            'Exporter attribution is explicit — full traceability on every bag',
-                            'Work is measured by bags (60 kg standard), not time alone',
-                            'One cooperative, many exporters, one truth source',
-                            'Attendance supports work — immutable audit trail maintained',
-                        ].map((step, i) => (
-                            <li key={i} className="flex items-start gap-3">
-                                <span className="flex items-center justify-center w-6 h-6 bg-blue-500 text-white rounded-full text-xs font-bold flex-shrink-0 mt-0.5">
-                                    {i + 1}
-                                </span>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">{step}</span>
-                            </li>
-                        ))}
-                    </ol>
                 </div>
             </div>
         </div>

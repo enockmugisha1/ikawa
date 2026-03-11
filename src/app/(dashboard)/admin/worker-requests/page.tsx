@@ -347,7 +347,7 @@ export default function AdminWorkerRequestsPage() {
                                                         <button
                                                             onClick={() => handleReview(req._id, 'rejected')}
                                                             disabled={processingId === req._id || req.status === 'rejected'}
-                                                            className="flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 border border-red-200 rounded-xl text-sm font-semibold hover:bg-red-100 disabled:opacity-50 transition-colors"
+                                                            className="flex items-center justify-center gap-2 py-2.5 bg-red-100 text-red-700 border border-red-200 rounded-xl text-sm font-semibold hover:bg-red-200 disabled:opacity-50 transition-colors"
                                                         >
                                                             <XCircle className="w-4 h-4" />
                                                             Reject
@@ -355,7 +355,7 @@ export default function AdminWorkerRequestsPage() {
                                                         <button
                                                             onClick={() => handleReview(req._id, 'fulfilled')}
                                                             disabled={processingId === req._id || req.status !== 'approved'}
-                                                            className="flex items-center justify-center gap-2 py-2.5 bg-blue-50 text-blue-600 border border-blue-200 rounded-xl text-sm font-semibold hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                                                            className="flex items-center justify-center gap-2 py-2.5 bg-blue-100 text-blue-700 border border-blue-200 rounded-xl text-sm font-semibold hover:bg-blue-200 disabled:opacity-50 transition-colors"
                                                         >
                                                             <CheckSquare className="w-4 h-4" />
                                                             Fulfilled
