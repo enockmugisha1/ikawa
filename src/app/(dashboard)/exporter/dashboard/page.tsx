@@ -197,6 +197,17 @@ export default function ExporterDashboard() {
             </div>
 
             {/* Financial Metrics */}
+            {analytics && !analytics.hasRateCard && analytics.totalCost === 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-xl p-4 flex items-center gap-3">
+                    <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/40 rounded-lg flex items-center justify-center flex-shrink-0">
+                        <Info className="w-5 h-5 text-amber-600" />
+                    </div>
+                    <div>
+                        <p className="text-sm font-medium text-amber-800 dark:text-amber-200">No Rate Card Configured</p>
+                        <p className="text-xs text-amber-600 dark:text-amber-400 mt-0.5">Contact an administrator to set up a rate card so labor costs can be calculated.</p>
+                    </div>
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
                 {/* Daily Labor Cost */}
                 <div className="relative overflow-hidden bg-white dark:bg-[#1e293b] rounded-xl shadow-sm border-l-4 border-l-green-500 border-t border-r border-b border-gray-200 dark:border-gray-700 p-6 hover:shadow-lg hover:-translate-y-1 transition-all">
@@ -211,7 +222,7 @@ export default function ExporterDashboard() {
                         <p className="mt-2 text-4xl font-bold text-gray-900 dark:text-gray-100">
                             FRw {(analytics?.costToday || 0).toLocaleString()}
                         </p>
-                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics?.bagsToday || 0} bags today {analytics?.ratePerBag ? `@ FRw ${analytics.ratePerBag}/bag` : ''}</p>
+                        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">{analytics?.bagsToday || 0} bags today {analytics?.ratePerBag ? `@ FRw ${analytics.ratePerBag.toLocaleString()}/bag` : '(no rate set)'}</p>
                     </div>
                 </div>
 

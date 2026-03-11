@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import mongoose from 'mongoose';
 import dbConnect from '@/lib/db';
 // Import all models via barrel to ensure schemas are registered for populate
-import { WorkerModel, BagModel, SessionModel, RateCardModel } from '@/lib/models';
+import { WorkerModel, BagModel, SessionModel, RateCardModel, EarningsModel } from '@/lib/models';
 import { getCurrentUser } from '@/lib/auth';
 import { getStartOfDay, getEndOfDay } from '@/lib/utils';
 
@@ -20,6 +21,7 @@ export async function GET(request: NextRequest) {
                     bagsToday: 0, totalWeightToday: 0, totalHoursWorked: 0, costToday: 0,
                     bagsThisWeek: 0, bagsThisMonth: 0, costThisMonth: 0,
                     ratePerBag: 0, totalCost: 0, projectedMonthlyCost: 0,
+                    hasRateCard: false,
                     trends: { bags: [], weight: [] },
                 }
             });
@@ -128,11 +130,46 @@ export async function GET(request: NextRequest) {
         const daysSinceStart = Math.max(1, Math.ceil((today.getTime() - oldestBag.getTime()) / (1000 * 60 * 60 * 24)));
         const avgBagsPerDay = totalBags / daysSinceStart;
 
-        // Calculate costs
-        const ratePerBag = activeRateCard?.ratePerBag || 0;
-        const totalCost = totalBags * ratePerBag;
-        const costToday = bagsToday * ratePerBag;
-        const costThisMonth = bagsThisMonth * ratePerBag;
+        // Calculate costs - use rate card if available, otherwise fall back to earnings data
+        const hasRateCard = !!activeRateCard;
+        let ratePerBag = activeRateCard?.ratePerBag || 0;
+        let totalCost = 0;
+        let costToday = 0;
+        let costThisMonth = 0;
+
+        if (hasRateCard && ratePerBag > 0) {
+            // Use rate card calculation
+            totalCost = totalBags * ratePerBag;
+            costToday = bagsToday * ratePerBag;
+            costThisMonth = bagsThisMonth * ratePerBag;
+        } else {
+            // Fall back to actual earnings data from Earnings collection
+            try {
+                const expObjId = new mongoose.Types.ObjectId(String(exporterId));
+                const [earningsTodayAgg, earningsMonthAgg, earningsTotalAgg] = await Promise.all([
+                    EarningsModel.aggregate([
+                        { $match: { exporterId: expObjId, date: { $gte: startOfDay, $lte: endOfDay } } },
+                        { $group: { _id: null, total: { $sum: '$totalEarnings' }, bags: { $sum: '$bagsProcessed' }, rate: { $avg: '$ratePerBag' } } },
+                    ]),
+                    EarningsModel.aggregate([
+                        { $match: { exporterId: expObjId, date: { $gte: monthStart, $lte: endOfDay } } },
+                        { $group: { _id: null, total: { $sum: '$totalEarnings' } } },
+                    ]),
+                    EarningsModel.aggregate([
+                        { $match: { exporterId: expObjId } },
+                        { $group: { _id: null, total: { $sum: '$totalEarnings' }, rate: { $avg: '$ratePerBag' } } },
+                    ]),
+                ]);
+
+                costToday = earningsTodayAgg[0]?.total || 0;
+                costThisMonth = earningsMonthAgg[0]?.total || 0;
+                totalCost = earningsTotalAgg[0]?.total || 0;
+                // Use average rate from earnings if no rate card
+                ratePerBag = earningsTotalAgg[0]?.rate || earningsTodayAgg[0]?.rate || 0;
+            } catch (earningsErr) {
+                console.error('[Exporter Analytics] Earnings fallback failed:', earningsErr);
+            }
+        }
 
         // Get trend data (last 7 days)
         const trendData = [];
@@ -175,7 +212,10 @@ export async function GET(request: NextRequest) {
             // Financial
             ratePerBag,
             totalCost: Math.round(totalCost * 100) / 100,
-            projectedMonthlyCost: Math.round((bagsThisMonth / new Date().getDate()) * 30 * ratePerBag * 100) / 100,
+            projectedMonthlyCost: ratePerBag > 0 
+                ? Math.round((bagsThisMonth / Math.max(new Date().getDate(), 1)) * 30 * ratePerBag * 100) / 100
+                : Math.round((costThisMonth / Math.max(new Date().getDate(), 1)) * 30 * 100) / 100,
+            hasRateCard,
 
             // Trends
             trends: {

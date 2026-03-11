@@ -30,7 +30,15 @@ export async function POST(request: NextRequest) {
         await user.save();
 
         // Send OTP email
-        await sendOtpEmail(user.email, otp, user.name);
+        const emailResult = await sendOtpEmail(user.email, otp, user.name);
+
+        if (!emailResult.success) {
+            console.error('[Forgot Password] Email failed:', emailResult.error);
+            return NextResponse.json(
+                { error: `Failed to send reset code email: ${emailResult.error}` },
+                { status: 500 }
+            );
+        }
 
         console.log('[Forgot Password] OTP sent to:', user.email);
 

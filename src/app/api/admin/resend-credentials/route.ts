@@ -35,7 +35,17 @@ export async function POST(request: NextRequest) {
         await user.save();
 
         // Send welcome email with new credentials
-        await sendWelcomeEmail(user.email, user.name, tempPassword, user.role);
+        const emailResult = await sendWelcomeEmail(user.email, user.name, tempPassword, user.role);
+
+        if (!emailResult.success) {
+            // Password was already reset, but email failed
+            console.error('[Admin Resend Credentials] Email failed:', emailResult.error);
+            return NextResponse.json({
+                message: `Password was reset but email delivery failed: ${emailResult.error}. New temporary password: ${tempPassword}`,
+                emailFailed: true,
+                tempPassword,
+            });
+        }
 
         return NextResponse.json({
             message: `New login credentials sent to ${user.email}`,

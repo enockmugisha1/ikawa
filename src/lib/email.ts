@@ -1,12 +1,22 @@
 import nodemailer from 'nodemailer';
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD,
-    },
-});
+// Create transporter lazily to ensure env vars are available at runtime
+function getTransporter() {
+    return nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth: {
+            user: process.env.SMTP_EMAIL,
+            pass: process.env.SMTP_PASSWORD,
+        },
+        // Increase timeout for slow connections (Render free tier)
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+    });
+}
 
 interface EmailOptions {
     to: string;
@@ -15,13 +25,15 @@ interface EmailOptions {
     attachments?: { filename: string; content: Buffer; cid?: string }[];
 }
 
-export async function sendEmail({ to, subject, html, attachments }: EmailOptions) {
+export async function sendEmail({ to, subject, html, attachments }: EmailOptions): Promise<{ success: boolean; error?: string }> {
     if (!process.env.SMTP_EMAIL || !process.env.SMTP_PASSWORD) {
-        console.warn('[Email] SMTP not configured – skipping email');
-        return false;
+        const msg = 'SMTP not configured – set SMTP_EMAIL and SMTP_PASSWORD environment variables';
+        console.warn('[Email]', msg);
+        return { success: false, error: msg };
     }
 
     try {
+        const transporter = getTransporter();
         await transporter.sendMail({
             from: `"CWMS" <${process.env.SMTP_EMAIL}>`,
             to,
@@ -30,14 +42,16 @@ export async function sendEmail({ to, subject, html, attachments }: EmailOptions
             attachments,
         });
         console.log(`[Email] Sent to ${to}: ${subject}`);
-        return true;
-    } catch (error) {
-        console.error('[Email] Failed:', error);
-        return false;
+        return { success: true };
+    } catch (error: any) {
+        const errorMsg = error?.message || 'Unknown email error';
+        console.error('[Email] Failed to send to', to, ':', errorMsg);
+        console.error('[Email] Full error:', error);
+        return { success: false, error: errorMsg };
     }
 }
 
-export async function sendOtpEmail(to: string, otp: string, name: string) {
+export async function sendOtpEmail(to: string, otp: string, name: string): Promise<{ success: boolean; error?: string }> {
     return sendEmail({
         to,
         subject: 'CWMS – Password Reset Code',
@@ -65,7 +79,7 @@ export async function sendWelcomeEmail(
     name: string,
     tempPassword: string,
     role: string
-) {
+): Promise<{ success: boolean; error?: string }> {
     const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
     const loginUrl = process.env.NEXT_PUBLIC_APP_URL
         ? `${process.env.NEXT_PUBLIC_APP_URL}/login`
@@ -109,7 +123,7 @@ export async function sendQrBadgeEmail(
     workerName: string,
     workerId: string,
     qrDataUrl: string
-) {
+): Promise<{ success: boolean; error?: string }> {
     // Convert data URL to Buffer for attachment
     const base64Data = qrDataUrl.replace(/^data:image\/png;base64,/, '');
     const qrBuffer = Buffer.from(base64Data, 'base64');

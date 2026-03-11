@@ -56,12 +56,21 @@ export async function POST(request: NextRequest) {
         });
 
         // Send welcome email with temporary password
+        let emailSent = false;
+        let emailError = '';
         try {
-            await sendWelcomeEmail(user.email, user.name, tempPassword, role);
+            const emailResult = await sendWelcomeEmail(user.email, user.name, tempPassword, role);
+            emailSent = emailResult.success;
+            if (!emailResult.success) {
+                emailError = emailResult.error || 'Unknown error';
+                console.error('[Admin Create User] Welcome email failed:', emailError);
+            }
         } catch (emailErr) {
+            emailError = emailErr instanceof Error ? emailErr.message : 'Unknown error';
             console.error('[Admin Create User] Welcome email failed (non-blocking):', emailErr);
         }
 
+        const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
         return NextResponse.json({
             user: {
                 id: user._id,
@@ -70,7 +79,11 @@ export async function POST(request: NextRequest) {
                 role: user.role,
                 phone: user.phone,
             },
-            message: `${role.charAt(0).toUpperCase() + role.slice(1)} account created. Login credentials sent to ${user.email}.`,
+            message: emailSent
+                ? `${roleLabel} account created. Login credentials sent to ${user.email}.`
+                : `${roleLabel} account created but email failed: ${emailError}. Temporary password: ${tempPassword}`,
+            emailFailed: !emailSent,
+            tempPassword: !emailSent ? tempPassword : undefined,
         }, { status: 201 });
     } catch (error) {
         console.error('[Admin Create User] Error:', error);
