@@ -25,7 +25,7 @@ export async function exportToExcel(data: ExportData): Promise<void> {
   // Create Summary Sheet
   if (data.summary) {
     const summaryData = [
-      ['CWMS - Export Report'],
+      ['Akazi Rwanda Ltd - Export Report'],
       [],
       ['Exporter:', data.exporterName],
       ['Code:', data.exporterCode],

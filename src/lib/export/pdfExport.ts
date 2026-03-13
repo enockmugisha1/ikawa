@@ -27,7 +27,7 @@ export async function exportToPDF(data: ExportData): Promise<void> {
   // Add Header
   doc.setFontSize(20);
   doc.setTextColor(37, 99, 235);
-  doc.text('CWMS - Export Report', pageWidth / 2, 20, { align: 'center' });
+  doc.text('Akazi Rwanda Ltd - Export Report', pageWidth / 2, 20, { align: 'center' });
   
   // Add Exporter Info
   doc.setFontSize(12);

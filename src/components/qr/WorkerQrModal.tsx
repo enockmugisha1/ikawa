@@ -32,7 +32,7 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
             setQrInfo({ qrToken: data.qrToken, workerId: data.workerId, phone: data.phone });
 
             // Generate QR code image from token
-            const url = await QRCode.toDataURL(`CWMS:${data.qrToken}`, {
+            const url = await QRCode.toDataURL(`AKAZI:${data.qrToken}`, {
                 width: 280,
                 margin: 2,
                 color: { dark: '#065f46', light: '#ffffff' },
@@ -74,10 +74,10 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
         ctx.fillStyle = '#ffffff';
         ctx.textAlign = 'center';
         ctx.font = 'bold 20px Arial, sans-serif';
-        ctx.fillText('CWMS', W / 2, 36);
+        ctx.fillText('Akazi Rwanda Ltd', W / 2, 36);
         ctx.font = '11px Arial, sans-serif';
         ctx.fillStyle = '#a7f3d0';
-        ctx.fillText('Coffee Worker Management System', W / 2, 54);
+        ctx.fillText('Akazi Rwanda Ltd', W / 2, 54);
 
         // QR code
         const qrImg = new Image();
@@ -163,8 +163,8 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
             <body>
                 <div class="badge">
                     <div class="badge-header">
-                        CWMS
-                        <span>Coffee Worker Management System</span>
+                        Akazi Rwanda Ltd
+                        <span>Akazi Rwanda Ltd</span>
                     </div>
                     <img src="${qrDataUrl}" class="qr-img" alt="QR Code" />
                     <div class="worker-name">${workerName}</div>
@@ -218,8 +218,8 @@ export function WorkerQrModal({ workerId, workerName, onClose }: WorkerQrModalPr
                             {/* Badge Preview */}
                             <div ref={printRef} className="border-2 border-emerald-600 rounded-xl overflow-hidden mb-4">
                                 <div className="bg-emerald-700 text-white text-center py-2 px-4">
-                                    <p className="font-bold tracking-widest text-sm">CWMS</p>
-                                    <p className="text-xs text-emerald-200">Coffee Worker Management System</p>
+                                    <p className="font-bold tracking-widest text-sm">Akazi Rwanda Ltd</p>
+                                    <p className="text-xs text-emerald-200">Akazi Rwanda Ltd</p>
                                 </div>
                                 <div className="bg-white p-4 text-center">
                                     {qrDataUrl && (

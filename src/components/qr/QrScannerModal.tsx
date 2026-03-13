@@ -68,13 +68,13 @@ export function QrScannerModal({ onClose, onCheckInSuccess }: QrScannerModalProp
         if (isProcessingRef.current) return;
         isProcessingRef.current = true;
 
-        // Validate QR format: must start with "CWMS:"
-        if (!decodedText.startsWith('CWMS:')) {
+        // Validate QR format: must start with "AKAZI:"
+        if (!decodedText.startsWith('AKAZI:')) {
             isProcessingRef.current = false;
             return;
         }
 
-        const qrToken = decodedText.replace('CWMS:', '').trim();
+        const qrToken = decodedText.replace('AKAZI:', '').trim();
         if (!qrToken) {
             isProcessingRef.current = false;
             return;

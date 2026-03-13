@@ -304,7 +304,7 @@ export default function AdminSettingsPage() {
                         </div>
                         <div className="flex justify-between">
                           <span style={{ color: 'var(--muted-foreground)' }}>Platform</span>
-                          <span style={{ color: 'var(--foreground)' }}>CWMS Admin</span>
+                          <span style={{ color: 'var(--foreground)' }}>Akazi Rwanda Ltd Admin</span>
                         </div>
                         <div className="flex justify-between">
                           <span style={{ color: 'var(--muted-foreground)' }}>Environment</span>

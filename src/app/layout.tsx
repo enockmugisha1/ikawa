@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CWMS - Casual Worker Management System",
-  description: "Digital platform for managing casual workers in Rwanda's coffee industry",
+  title: "Akazi Rwanda Ltd",
+  description: "Digital platform for managing workers at Akazi Rwanda Ltd",
 };
 
 export default function RootLayout({

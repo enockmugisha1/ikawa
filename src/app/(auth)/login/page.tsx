@@ -80,10 +80,10 @@ function LoginForm() {
                             </svg>
                         </div>
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                            CWMS Login
+                            Akazi Rwanda Ltd
                         </h1>
                         <p className="text-gray-600">
-                            Casual Worker Management System
+                            Worker Management System
                         </p>
                     </div>
 

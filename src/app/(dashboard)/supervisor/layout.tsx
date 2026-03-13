@@ -59,7 +59,7 @@ export default function SupervisorLayout({ children }: { children: ReactNode }) 
                                 </div>
                                 <div className="hidden sm:block">
                                     <span className="text-lg font-bold text-white tracking-wide">
-                                        CWMS
+                                        Akazi Rwanda Ltd
                                     </span>
                                     <div className="mt-0">
                                         <span className="text-xs font-medium text-white/50">Supervisor Portal</span>

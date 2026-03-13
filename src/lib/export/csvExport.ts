@@ -22,7 +22,7 @@ export async function exportToCSV(data: ExportData): Promise<void> {
   let csvContent = '';
   
   // Add Header Info
-  csvContent += `CWMS - Export Report\n`;
+  csvContent += `Akazi Rwanda Ltd - Export Report\n`;
   csvContent += `Exporter:,${data.exporterName}\n`;
   csvContent += `Code:,${data.exporterCode}\n`;
   

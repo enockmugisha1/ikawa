@@ -116,7 +116,7 @@ export default function SignupPage() {
                         Initial Admin Setup
                     </h1>
                     <p className="text-gray-600">
-                        Create the first administrator account for CWMS
+                        Create the first administrator account for Akazi Rwanda Ltd
                     </p>
                 </div>
 

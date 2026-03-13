@@ -1,8 +1,8 @@
 import { ReactNode } from 'react';
 
 export const metadata = {
-    title: 'Login - CWMS',
-    description: 'Login to Casual Worker Management System',
+    title: 'Login - Akazi Rwanda Ltd',
+    description: 'Login to Akazi Rwanda Ltd',
 };
 
 export default function AuthLayout({ children }: { children: ReactNode }) {

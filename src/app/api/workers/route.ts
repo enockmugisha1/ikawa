@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
         // Send QR badge email if worker has email
         if (worker.email) {
             try {
-                const qrDataUrl = await QRCode.toDataURL(`CWMS:${worker.qrToken}`, {
+                const qrDataUrl = await QRCode.toDataURL(`AKAZI:${worker.qrToken}`, {
                     width: 280,
                     margin: 2,
                     color: { dark: '#065f46', light: '#ffffff' },
